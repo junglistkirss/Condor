@@ -1,0 +1,28 @@
+﻿using System;
+/*
+ * 
+ * 
+
+[Visitor<IEventMessage>, AutoAcceptor<IEventMessage>, VisitArg<RefToken>]
+[GenerateDefault]
+[GenerateVisitable, AcceptParam<IEventMessage>]
+public partial interface IEventMessageVisitor<in TArgs> { }
+
+
+[Visitor(typeof(ICommandMessage), GenerateDefault = true, CreateVisitable = true)]
+public partial interface ICommandMessageVisitor<out T, in TArgs> { }
+
+
+[Visitor(typeof(ISmartAggregate), GenerateDefault = true, CreateVisitable = true)]
+public partial interface ISmartAggregateVisitor<out T, in TArgs> { }
+
+  */
+
+namespace Condor.Visitor.Generator.Abstractions
+{
+    public abstract class VisitorOfAttribute(Type type) : BaseVisitorAttribute
+    {
+        public Type Type { get; } = type;
+    }
+
+}

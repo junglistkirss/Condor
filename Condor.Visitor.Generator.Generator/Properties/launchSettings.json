@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Debug Generator on Toucan.Core": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\..\\Toucan.Core\\Toucan.Core.csproj"
+    }
+  }
+}
