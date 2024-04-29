@@ -29,12 +29,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
-    <ProjectReference Include="..\Condor.Generator.Utils\Condor.Generator.Utils.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\Condor.Visitor.Generator.Abstractions\Condor.Visitor.Generator.Abstractions.csproj" OutputItemType="Analyzer" />
+    <PackageReference Include="Condor.Generator.Utils" Version="1.0.0" GeneratePathProperty="true" />
+    <PackageReference Include="Condor.Visitor.Generator.Abstractions" Version="1.0.0" GeneratePathProperty="true" />
+    <!-- <ProjectReference Include="..\Condor.Generator.Utils\Condor.Generator.Utils.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\Condor.Visitor.Generator.Abstractions\Condor.Visitor.Generator.Abstractions.csproj" OutputItemType="Analyzer" /> -->
   </ItemGroup>
   
  <ItemGroup>
    <None Update="tools\**" Pack="true" PackagePath="" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(PkgCondor_Generator_Utils)\lib\netstandard2.0\Condor.Generator.Utils.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(PkgCondor_Visitor_Generator_Abstractions)\lib\netstandard2.0\Condor.Visitor.Generator.Asbtractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 </Project>
