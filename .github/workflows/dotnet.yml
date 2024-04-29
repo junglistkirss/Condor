@@ -21,13 +21,12 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+        source-url: https://nuget.pkg.github.com/junglistkirss/index.json
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
 
     - name: Restore dependencies
-      run: |
-        dotnet nuget add source --username "junglistkirss" --password "${{ env.NUGET_AUTH_TOKEN }}" --store-password-in-clear-text --name "Private" "https://nuget.pkg.github.com/junglistkirss/index.json"
-        dotnet restore
+      run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
     # - name: Test
