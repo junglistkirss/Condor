@@ -35,16 +35,29 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
-    <PackageReference Include="Condor.Generator.Utils" Version="1.0.1" GeneratePathProperty="true" />
-    <PackageReference Include="Condor.Visitor.Generator.Abstractions" Version="1.0.1" GeneratePathProperty="true" />
-    <!-- <ProjectReference Include="..\Condor.Generator.Utils\Condor.Generator.Utils.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\Condor.Visitor.Generator.Abstractions\Condor.Visitor.Generator.Abstractions.csproj" OutputItemType="Analyzer" /> -->
+    <ProjectReference Include="..\Condor.Generator.Utils\Condor.Generator.Utils.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Condor.Visitor.Generator.Abstractions\Condor.Visitor.Generator.Abstractions.csproj" PrivateAssets="all" />
   </ItemGroup>
-  
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+    <ItemGroup>
+      <!-- Filter out unnecessary files -->
+      <_ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))"/>
+    </ItemGroup>
+
+    <!-- Print batches for debug purposes -->
+    <Message Text="Batch for .nupkg: ReferenceCopyLocalPaths = @(_ReferenceCopyLocalPaths), ReferenceCopyLocalPaths.DestinationSubDirectory = %(_ReferenceCopyLocalPaths.DestinationSubDirectory) Filename = %(_ReferenceCopyLocalPaths.Filename) Extension = %(_ReferenceCopyLocalPaths.Extension)" Importance="High" Condition="'@(_ReferenceCopyLocalPaths)' != ''" />
+
+    <ItemGroup>
+      <!-- Add file to package with consideration of sub folder. If empty, the root folder is chosen. -->
+      <BuildOutputInPackage Include="@(_ReferenceCopyLocalPaths)" TargetPath="%(_ReferenceCopyLocalPaths.DestinationSubDirectory)"/>
+    </ItemGroup>
+  </Target>
  <ItemGroup>
    <None Update="tools\**" Pack="true" PackagePath="" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PkgCondor_Generator_Utils)\lib\netstandard2.0\Condor.Generator.Utils.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PkgCondor_Visitor_Generator_Abstractions)\lib\netstandard2.0\Condor.Visitor.Generator.Asbtractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 </Project>
