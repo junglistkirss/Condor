@@ -1,4 +1,4 @@
-﻿using Toucan.Generator.Utils;
+﻿using Condor.Generator.Utils;
 
 namespace Condor.Visitor.Generator
 {

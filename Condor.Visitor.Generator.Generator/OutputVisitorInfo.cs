@@ -1,5 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Toucan.Generator.Utils;
+using Condor.Generator.Utils;
 
 namespace Condor.Visitor.Generator
 {

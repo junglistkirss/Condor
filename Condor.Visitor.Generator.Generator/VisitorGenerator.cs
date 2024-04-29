@@ -1,13 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
-using Toucan.Generator.Utils;
-using Toucan.Generator.Utils.Visitors;
+using Condor.Generator.Utils;
+using Condor.Generator.Utils.Visitors;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Threading;
-using Toucan.Generator.Utils.Templating;
-using Toucan.Visitor.Generator.Abstractions;
-using Toucan.Visitor.Generator;
+using Condor.Generator.Utils.Templating;
+using Condor.Visitor.Generator.Abstractions;
+using Condor.Visitor.Generator;
 
 namespace Condor.Visitor.Generator
 {
@@ -98,7 +98,7 @@ namespace Condor.Visitor.Generator
                 return sc.Attributes.Select(attr => (
                      Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                      VisitedType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance),
-                     AssemblyPart: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPart), out string ap) ? ap : nameof(Toucan),
+                     AssemblyPart: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPart), out string ap) ? ap : nameof(Condor),
                      AllowAbstract: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool abs) ? abs : false,
                      AllowGeneric: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowGeneric), out bool g) ? g : false,
                      AllowRecord: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool r) ? r : true
