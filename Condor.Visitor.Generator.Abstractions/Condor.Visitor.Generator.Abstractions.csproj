@@ -9,6 +9,7 @@
     <Company>Christian Bourbier</Company>
     <PackageDescription>Attributes to instruct code generation for Visitor pattern</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor.Visitor.Generator.Abstractions</RepositoryUrl>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
 </Project>

@@ -14,6 +14,7 @@
     <Company>Christian Bourbier</Company>
     <PackageDescription>Visitor pattern generator</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor.Visitor.Generator</RepositoryUrl>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   
   <!--<ItemGroup>
