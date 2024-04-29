@@ -44,7 +44,7 @@
  <ItemGroup>
    <None Update="tools\**" Pack="true" PackagePath="" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <!-- <None Include="$(PkgCondor_Generator_Utils)\lib\netstandard2.0\Condor.Generator.Utils.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PkgCondor_Visitor_Generator_Abstractions)\lib\netstandard2.0\Condor.Visitor.Generator.Asbtractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" /> -->
+    <None Include="$(PkgCondor_Generator_Utils)\lib\netstandard2.0\Condor.Generator.Utils.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(PkgCondor_Visitor_Generator_Abstractions)\lib\netstandard2.0\Condor.Visitor.Generator.Asbtractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 </Project>
