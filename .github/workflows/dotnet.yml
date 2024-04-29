@@ -26,7 +26,7 @@ jobs:
 
     - name: Restore dependencies
       run: |
-        dotnet nuget add source "https://nuget.pkg.github.com/junglistkirss/index.json" --name "Private" --username "junglistkirss" --password "${{ env.NUGET_AUTH_TOKEN }}" --store-password-in-clear-text
+        dotnet nuget add source --username "junglistkirss" --password "${{ env.NUGET_AUTH_TOKEN }}" --store-password-in-clear-text --name "Private" "https://nuget.pkg.github.com/junglistkirss/index.json"
         dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
