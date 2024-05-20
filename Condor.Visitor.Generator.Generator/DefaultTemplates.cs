@@ -91,6 +91,7 @@ namespace {{OutputNamespace}}
                     {{#if ../IsAsync}}
                     return Visit(x{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}}{{#each ../ArgsName}}, {{{.}}}{{/each}});
                     {{else}}
+                    Visit(x{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}}{{#each ../ArgsName}}, {{{.}}}{{/each}});
                     break;
                     {{/if}}
                     {{/if}}
