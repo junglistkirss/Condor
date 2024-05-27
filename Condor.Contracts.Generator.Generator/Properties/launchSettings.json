@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Debug Generator on Condor.Dtca.Api": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\..\\Dtca\\Condor.Dtca.Api\\Condor.Dtca.Api.csproj"
+    },
+    "Debug Generator on Condor.Dtca.Machine": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\..\\Dtca\\Condor.Dtca.Machine\\Condor.Dtca.Machine.csproj"
+    }
+  }
+}

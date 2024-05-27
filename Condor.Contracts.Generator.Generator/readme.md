@@ -1,0 +1,1 @@
+# Condor.Contracts.Generator
