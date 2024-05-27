@@ -1,0 +1,1 @@
+# Condor.Templated.Generator
