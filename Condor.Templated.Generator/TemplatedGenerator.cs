@@ -247,21 +247,13 @@ namespace Condor.Templated.Generator
                         x.RegisterHelper("IsEnhanced", (ctx, args) =>
                         {
                             object obj = args.First();
-                            if (obj is EnhanceInfo[] enhances)
+                            if (obj is ActionDataInfo action)
                             {
-                                return enhances.Any();
+                                return action.Enhancements.Any();
                             }
-                            if (obj is TemplatedInfo templated)
+                            if (obj is MemberDataInfo member)
                             {
-                                return templated.Enhancements.Any();
-                            }
-                            if (obj is ActionDataInfo[] actions)
-                            {
-                                return actions.Any();
-                            }
-                            if (obj is MemberDataInfo[] members)
-                            {
-                                return members.Any();
+                                return member.Enhancements.Any();
                             }
                             return false;
                         });
