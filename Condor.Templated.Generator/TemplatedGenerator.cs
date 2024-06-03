@@ -200,6 +200,19 @@ namespace Condor.Templated.Generator
                             }
                             return null;
                         });
+                        x.RegisterHelper("Enhanceds", (ctx, args) =>
+                        {
+                            object obj = args.First();
+                            if (obj is ActionDataInfo[] actions)
+                            {
+                                return actions.Where(x => x.Enhancements.Any());
+                            }
+                            if (obj is MemberDataInfo[] members)
+                            {
+                                return members.Where(x => x.Enhancements.Any());
+                            }
+                            return null;
+                        });
                         x.RegisterHelper("WithAllEnhancements", (ctx, args) =>
                         {
                             object obj = args.First();
