@@ -244,6 +244,27 @@ namespace Condor.Templated.Generator
                             }
                             return false;
                         });
+                        x.RegisterHelper("IsEnhanced", (ctx, args) =>
+                        {
+                            object obj = args.First();
+                            if (obj is EnhanceInfo[] enhances)
+                            {
+                                return enhances.Any();
+                            }
+                            if (obj is TemplatedInfo templated)
+                            {
+                                return templated.Enhancements.Any();
+                            }
+                            if (obj is ActionDataInfo[] actions)
+                            {
+                                return actions.Any();
+                            }
+                            if (obj is MemberDataInfo[] members)
+                            {
+                                return members.Any();
+                            }
+                            return false;
+                        });
                         x.RegisterHelper("HasAllEnhancements", (ctx, args) =>
                         {
                             object obj = args.First();
