@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.Templated.Generator.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.Templated.Generator", "Condor.Templated.Generator\Condor.Templated.Generator.csproj", "{C46F0388-86B6-455C-A679-CD4DE19BABCC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.With.Generator", "Condor.With.Generator\Condor.With.Generator.csproj", "{22501C7F-684F-449F-A350-B1478811A283}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.With.Generator.Abstractions", "Condor.With.Generator.Abstractions\Condor.With.Generator.Abstractions.csproj", "{3F4A1D13-524B-403C-9B58-6FC96371E33A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{C46F0388-86B6-455C-A679-CD4DE19BABCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C46F0388-86B6-455C-A679-CD4DE19BABCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C46F0388-86B6-455C-A679-CD4DE19BABCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22501C7F-684F-449F-A350-B1478811A283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22501C7F-684F-449F-A350-B1478811A283}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22501C7F-684F-449F-A350-B1478811A283}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22501C7F-684F-449F-A350-B1478811A283}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F4A1D13-524B-403C-9B58-6FC96371E33A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F4A1D13-524B-403C-9B58-6FC96371E33A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F4A1D13-524B-403C-9B58-6FC96371E33A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F4A1D13-524B-403C-9B58-6FC96371E33A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
