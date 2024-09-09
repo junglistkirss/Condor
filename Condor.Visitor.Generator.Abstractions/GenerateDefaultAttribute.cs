@@ -24,7 +24,6 @@ namespace Condor.Visitor.Generator.Abstractions
     {
         public OptionsDefault Options { get; set; } = OptionsDefault.None;
         public VisitOptions VisitOptions { get; set; } = VisitOptions.AbstractVisit;
-        public bool ThrowOnFallBack { get; set; } = true;
     }
 
 }

@@ -19,7 +19,7 @@ namespace Condor.Visitor.Generator
             IncrementalValueProvider<TypesProvider> types = context.GetTypesProvider();
             IncrementalValueProvider<ImmutableArray<KeyedTemplate>> additionalFiles = context.GetTemplates().Collect();
 
-            var visitorsOf = context.SyntaxProvider
+            var visitors = context.SyntaxProvider
                .ForAttributeWithMetadataName(
                    typeof(VisitorAttribute).FullName,
                    (node, _) => node is TypeDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
@@ -27,43 +27,14 @@ namespace Condor.Visitor.Generator
                    {
                        cancellationToken.ThrowIfCancellationRequested();
                        var attr = sc.Attributes.Single();
-                       var flags = attr.TryGetNamedArgument(nameof(VisitorOfAttribute.Options), out VisitorOptions f) ? f : VisitorOptions.AddVisitFallBack;
                        return (
                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                            Owner: sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
                            Keyword: ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
                            AccessibilityModifier: sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
-                           VisitedType: ((INamedTypeSymbol)attr.ConstructorArguments.First().Value).Accept(TargetTypeVisitor.Instance),
-                           IsAsync: attr.TryGetNamedArgument(nameof(VisitorOfAttribute.IsAsync), out bool w) ? w : false,
-                           AddVisitFallBack: flags.HasFlag(VisitorOptions.AddVisitFallBack),
-                           AddVisitRedirect: flags.HasFlag(VisitorOptions.AddVisitRedirect)
+                           IsAsync: attr.TryGetNamedArgument(nameof(VisitorAttribute.IsAsync), out bool w) ? w : false
                         );
                    });
-            var typedVisitors = context.SyntaxProvider
-               .ForAttributeWithMetadataName(
-                   typeof(VisitorAttribute<>).FullName,
-                   (node, _) => node is TypeDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
-                   (sc, cancellationToken) =>
-                   {
-                       cancellationToken.ThrowIfCancellationRequested();
-                       var attr = sc.Attributes.Single();
-                       var flags = attr.TryGetNamedArgument(nameof(VisitorOfAttribute.Options), out VisitorOptions f) ? f : VisitorOptions.AddVisitFallBack;
-                       return (
-                           Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                           Owner: sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
-                           Keyword: ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
-                           AccessibilityModifier: sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
-                           VisitedType: attr.AttributeClass.TypeArguments.Single().Accept(TargetTypeVisitor.Instance),
-                           IsAsync: attr.TryGetNamedArgument(nameof(VisitorOfAttribute.IsAsync), out bool w) ? w : false,
-                           AddVisitFallBack: flags.HasFlag(VisitorOptions.AddVisitFallBack),
-                           AddVisitRedirect: flags.HasFlag(VisitorOptions.AddVisitRedirect)
-                        );
-                   });
-
-            var visitors = visitorsOf.Collect().Combine(typedVisitors.Collect()).SelectMany((x, _) =>
-            {
-                return x.Left.Union(x.Right);
-            });
 
 
             var acceptors = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -81,10 +52,22 @@ namespace Condor.Visitor.Generator
                        cancellationToken.ThrowIfCancellationRequested();
                        return x.GroupBy(e => e.Correlation).Select(e =>
                        {
-                           return (Correlation: e.Key, ImplementationTypes: e.Select(i => i.ImplementationType));
+                           return (Correlation: e.Key, AddVisitFallBack: false, AddVisitRedirect: false, ThrowOnFallBack: false, ImplementationTypes: e.Select(i => i.ImplementationType));
                        });
                    });
-
+            var output = context.SyntaxProvider
+               .ForAttributeWithMetadataName(
+                   typeof(OutputAttribute<>).FullName,
+                   (node, _) => node is TypeDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
+                   (sc, cancellationToken) =>
+                   {
+                       cancellationToken.ThrowIfCancellationRequested();
+                       var attr = sc.Attributes.Single();
+                       return (
+                           Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
+                           Output: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance)
+                        );
+                   });
             var autoAcceptor = context.SyntaxProvider
             .ForAttributeWithMetadataName(
             typeof(AutoAcceptorAttribute<>).FullName,
@@ -98,7 +81,10 @@ namespace Condor.Visitor.Generator
                      AssemblyPart: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPart), out string ap) ? ap : nameof(Condor),
                      AllowAbstract: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool abs) ? abs : false,
                      AllowGeneric: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowGeneric), out bool g) ? g : false,
-                     AllowRecord: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool r) ? r : true
+                     AllowRecord: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool r) ? r : true,
+                     AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) ? f : false,
+                     AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) ? d : false,
+                     ThrowOnFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.ThrowOnFallBack), out bool t) ? t : false
                  ));
             }).Combine(types).SelectMany((x, cancellationToken) =>
             {
@@ -121,7 +107,7 @@ namespace Condor.Visitor.Generator
 
                                     )
                              );
-                             return (e.Correlation, ImplementationTypes);
+                             return (e.Correlation, e.AddVisitFallBack, e.AddVisitRedirect, e.ThrowOnFallBack, ImplementationTypes);
                          });
                      });
             });
@@ -157,7 +143,6 @@ namespace Condor.Visitor.Generator
                        return (
                             Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                             GenerateDefault: true,
-                            ThrowOnFallBack: attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.ThrowOnFallBack), out bool t) ? t : true,
                             UseVisitFallBack: vo == VisitOptions.UseVisitFallBack,
                             ForcePublic: o.HasFlag(OptionsDefault.ForcePublic),
                             IsPartial: o.HasFlag(OptionsDefault.IsPartial),
@@ -203,45 +188,49 @@ namespace Condor.Visitor.Generator
                     cancellationToken.ThrowIfCancellationRequested();
                     return x.Left.Select(e =>
                     {
-                        var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect) = e;
-                        var ImplementationTypes = x.Right.Where(r => r.Correlation == Correlation).SelectMany(z => z.ImplementationTypes);
-                        return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes);
+                        var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync) = e;
+                        var ImplementationTypes = x.Right.Where(r => r.Correlation == Correlation).Select(z => (z.AddVisitFallBack, z.AddVisitRedirect, z.ThrowOnFallBack, z.ImplementationTypes));
+                        return (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes);
                     });
                 })
                 .Combine(autoAcceptor.Collect())
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes) = x.Left;
-                    var AutoImplementationTypes = x.Right.Where(r => r.Correlation == Correlation).SelectMany(z => z.ImplementationTypes);
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes) = x.Left;
+                    var AutoImplementationTypes = x.Right.Where(r => r.Correlation == Correlation).Select(z => (z.AddVisitFallBack, z.AddVisitRedirect, z.ThrowOnFallBack, z.ImplementationTypes));
                     return (
                         Correlation,
                         Owner,
                         Keyword,
                         AccessibilityModifier,
-                        VisitedType,
                         IsAsync,
-                        AddVisitFallBack,
-                        AddVisitRedirect,
                         ImplementationTypes: ImplementationTypes.Union(AutoImplementationTypes)
                     );
+                })
+                .Combine(output.Collect())
+                .Select((x, cancellationToken) =>
+                {
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes) = x.Left;
+                    TargetTypeInfo? Output = null;
+                    if(x.Right.Any(x => x.Correlation == Correlation))
+                        Output = x.Right.SingleOrDefault(x => x.Correlation == Correlation).Output;
+                    return (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output);
                 })
                 .Combine(@default.Collect())
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output) = x.Left;
                     var GenerateDefault = x.Right.FirstOrDefault(x => x.Correlation == Correlation);
                     return (
                         Correlation,
                         Owner,
                         Keyword,
                         AccessibilityModifier,
-                        VisitedType,
                         IsAsync,
-                        AddVisitFallBack,
-                        AddVisitRedirect,
-                        ImplementationTypes,
+                        ImplementationTypes, 
+                        Output,
                         GenerateDefault
                     );
                 })
@@ -249,25 +238,25 @@ namespace Condor.Visitor.Generator
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output, GenerateDefault) = x.Left;
                     bool GenerateVisitable = x.Right.Any(x => x == Correlation);
-                    return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable);
+                    return (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output, GenerateDefault, GenerateVisitable);
                 })
                 .Combine(acceptParams.Collect())
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output, GenerateDefault, GenerateVisitable) = x.Left;
                     IEnumerable<(TargetTypeInfo AcceptParamType, string AcceptParamName)> AcceptParams = x.Right.Where(x => x.Correlation == Correlation).SelectMany(x => x.AcceptParamTypes);
-                    return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams);
+                    return (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output, GenerateDefault, GenerateVisitable, AcceptParams);
                 })
                 .Combine(visitParams.Collect())
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output, GenerateDefault, GenerateVisitable, AcceptParams) = x.Left;
                     IEnumerable<(TargetTypeInfo VisitParamType, string VisitParamName)> VisitParams = x.Right.Where(x => x.Correlation == Correlation).SelectMany(x => x.VisitParamTypes);
-                    return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams);
+                    return (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams);
                 })
                 /*.Select((x,_)=>
                 {
@@ -287,8 +276,38 @@ namespace Condor.Visitor.Generator
                 string template = templates
                      .FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
 
-                var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams) = data.Left;
+                var (Correlation, Owner, Keyword, AccessibilityModifier, IsAsync, ImplementationTypes, Output, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams) = data.Left;
                 string className = Owner.TypeName;
+
+                List<NamedParamInfo> typedArgs = new List<NamedParamInfo>();
+                if (Owner.IsGeneric && Owner.GenericTypes.Any(x => x.IsIn))
+                {
+                    typedArgs.AddRange(Owner.GenericTypes.Where(x => x.IsIn).Select(x => new NamedParamInfo
+                    {
+                        ParamTypeFullName = x.Name,
+                        SanitizedParamName = x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower()
+
+                    }));
+                }
+                typedArgs.AddRange(VisitParams.Select(x => new NamedParamInfo
+                {
+                    ParamTypeFullName = x.VisitParamType.TypeFullName,
+                    SanitizedParamName = x.VisitParamName ?? x.VisitParamType.SanitizeTypeNameAsArg,
+                }));
+
+                string returnType = default;
+                bool hasReturnType = false;
+                if (Output != null) {
+                    hasReturnType = true;
+                    returnType = Output.TypeFullName;
+                }
+                else
+                {
+                    hasReturnType = Owner.IsGeneric && (Owner.GenericTypes.Any(x => x.IsOut) || Owner.GenericTypes.Where(x => x.IsVarianceUnspecified).Count() == 1);
+                    returnType = Owner.GenericTypes.FirstOrDefault(x => x.IsOut)?.Name ?? Owner.GenericTypes.FirstOrDefault(x => x.IsVarianceUnspecified)?.Name;
+                }
+
+
                 var template_datas = new OutputVisitorInfo
                 {
                     ClassName = className,
@@ -298,23 +317,22 @@ namespace Condor.Visitor.Generator
                     GenericTypesDefinition = Owner.IsGeneric ? Owner.TypeName.Replace(Owner.GenericBaseTypeName, "") : null,
                     BaseTypeDefinition = Owner.IsGeneric ? Owner.TypeName.Substring(0, Owner.TypeName.IndexOf("<")) : Owner.TypeName,
                     AccessibilityModifier = AccessibilityModifier,
-                    Owner = Owner,
-                    VisitedType = VisitedType,
+                    HasReturnType = hasReturnType,
+                    ReturnType = returnType ,
+                    HasArgs = typedArgs.Count > 0,
                     IsAsync = IsAsync,
-                    TypedArgs = VisitParams.Select(x => new NamedParamInfo
+                    TypedArgs = typedArgs.ToArray(),
+                    ImplementationGroup = ImplementationTypes.Select(x => new ImplGroup
                     {
-                        ParamName = x.VisitParamName,
-                        ParamType = x.VisitParamType,
+                        AddVisitFallBack = x.AddVisitFallBack,
+                        AddVisitRedirect = x.AddVisitRedirect,
+                        ImplementationTypes = x.ImplementationTypes.ToArray(),
+                        ThrowOnFallBack = x.ThrowOnFallBack,
                     }).ToArray(),
-                    AddVisitFallBack = AddVisitFallBack,
-                    AddVisitRedirect = AddVisitRedirect,
-                    ImplementationTypes = ImplementationTypes.ToArray(),
                     Default = new OutputVisitorDefaultInfo
                     {
                         DefaultTypeName = (Owner.IsGeneric ? Owner.TypeName.Substring(0, Owner.TypeName.IndexOf("<")) : Owner.TypeName).SanitizeBaseOrInterfaceName(),
                         GenerateDefault = GenerateDefault.GenerateDefault,
-                        UseVisitFallBack = GenerateDefault.UseVisitFallBack,
-                        ThrowOnFallBack = GenerateDefault.ThrowOnFallBack,
                         ForcePublic = GenerateDefault.ForcePublic,
                         IsAbstract = GenerateDefault.IsAbstract,
                         IsPartial = GenerateDefault.IsPartial,
@@ -325,8 +343,8 @@ namespace Condor.Visitor.Generator
                         VisitableTypeName = Owner.GenericBaseTypeName.Replace("Visitor", "") + "Visitable",
                         VisitableParameters = AcceptParams.Select(x => new NamedParamInfo
                         {
-                            ParamName = x.AcceptParamName,
-                            ParamType = x.AcceptParamType,
+                            SanitizedParamName = x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg,
+                            ParamTypeFullName = x.AcceptParamType.TypeFullName,
                         }).ToArray(),
                         GenerateVisitable = GenerateVisitable,
 

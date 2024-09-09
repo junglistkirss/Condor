@@ -6,9 +6,7 @@
         public bool IsAbstract { get; internal set; }
         public bool IsPartial { get; internal set; }
         public bool GenerateDefault { get; internal set; }
-        public bool UseVisitFallBack { get; internal set; }
         public bool IsVisitAbstract { get; internal set; }
-        public bool ThrowOnFallBack { get; internal set; }
         public string DefaultTypeName { get; internal set; }
     }
 }

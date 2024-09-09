@@ -11,45 +11,8 @@
 {{#*inline ""ResponseNested""}}
 {{~#if ../IsAsync}}{{~#if ../HasReturnType}}ValueTask<{{{../ReturnType}}}>{{~else~}}ValueTask{{/if~}}{{else}}{{~#if ../HasReturnType}}{{{../ReturnType}}}{{~else~}}void{{/if~}}{{/if~}}
 {{/inline}}
-
-
-namespace {{OutputNamespace}}
-{
-    {{#if Visitable.GenerateVisitable}}
-    {{AccessibilityModifier}} partial interface {{{Visitable.VisitableTypeName}}} {
-        {{>Response}} Accept{{{GenericTypesDefinition}}}(
-            {{BaseTypeDefinition}}{{{GenericTypesDefinition}}} visitor{{#each Visitable.VisitableParameters}}, 
-            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
-            {{{.}}}{{/each}});
-    }
-    {{/if}}
-
-    {{AccessibilityModifier}} partial {{{KeywordTypeDefinition}}} {{{OriginalTypeDefinition}}}
-    {
-        {{#if AddVisitFallBack}}
-        {{>Response}} VisitFallBack(
-            {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
-            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
-            {{{.}}}{{/each}});
-        {{/if}}
-        {{#if AddVisitRedirect}}
-        {{>Response}} VisitRedirect(
-            {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
-            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
-            {{{.}}}{{/each}});
-        {{/if}}
-        {{#each ImplementationTypes}}
-        {{>ResponseNested}} Visit(
-            {{{TypeFullName}}} element{{#each ../TypedArgs}}, 
-            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, 
-            {{{.}}}{{/each}});
-        {{/each}}
-    }
-
-    {{#if Default.GenerateDefault}}
-    {{#if Default.ForcePublic}}public {{else}}{{AccessibilityModifier}} {{/if}}{{#if Default.IsAbstract}}abstract {{/if}}{{#if Default.IsPartial}}partial {{/if}}class Default{{Default.DefaultTypeName}}{{{GenericTypesDefinition}}} : {{BaseTypeDefinition}}{{{GenericTypesDefinition}}}
-    {
-        {{#if AddVisitFallBack}}
+{{#*inline ""VisitOptions""}}
+    {{#if AddVisitFallBack}}
         public virtual {{>Response}} VisitFallBack(
             {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
             {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
@@ -113,6 +76,50 @@ namespace {{OutputNamespace}}
             }
         }
         {{/if}}
+{{/inline}}
+
+
+namespace {{OutputNamespace}}
+{
+    {{#if Visitable.GenerateVisitable}}
+    {{AccessibilityModifier}} partial interface {{{Visitable.VisitableTypeName}}} {
+        {{>Response}} Accept{{{GenericTypesDefinition}}}(
+            {{BaseTypeDefinition}}{{{GenericTypesDefinition}}} visitor{{#each Visitable.VisitableParameters}}, 
+            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
+            {{{.}}}{{/each}});
+    }
+    {{/if}}
+
+    {{AccessibilityModifier}} partial {{{KeywordTypeDefinition}}} {{{OriginalTypeDefinition}}}
+    {
+        {{#if IsSolid}}
+        {{>VisitOptions}}
+        {{/else}}
+        {{#if AddVisitFallBack}}
+        {{>Response}} VisitFallBack(
+            {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
+            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
+            {{{.}}}{{/each}});
+        {{/if}}
+        {{#if AddVisitRedirect}}
+        {{>Response}} VisitRedirect(
+            {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
+            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
+            {{{.}}}{{/each}});
+        {{/if}}
+        {{/if}}
+        {{#each ImplementationTypes}}
+        {{>ResponseNested}} Visit(
+            {{{TypeFullName}}} element{{#each ../TypedArgs}}, 
+            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, 
+            {{{.}}}{{/each}});
+        {{/each}}
+    }
+
+    {{#if Default.GenerateDefault}}
+    {{#if Default.ForcePublic}}public {{else}}{{AccessibilityModifier}} {{/if}}{{#if Default.IsAbstract}}abstract {{/if}}{{#if Default.IsPartial}}partial {{/if}}class Default{{Default.DefaultTypeName}}{{{GenericTypesDefinition}}} : {{BaseTypeDefinition}}{{{GenericTypesDefinition}}}
+    {
+        {{>VisitOptions}}
         {{#each ImplementationTypes}}
         {{#if ../Default.IsVisitAbstract}}
         public abstract {{>ResponseNested}} Visit(

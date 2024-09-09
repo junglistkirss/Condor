@@ -2,7 +2,10 @@
 
 namespace Condor.Visitor.Generator.Abstractions
 {
-    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    public class VisitorAttribute<TElement>() : VisitorOfAttribute(typeof(TElement)) { }
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
+    public class VisitorAttribute() : Attribute
+    {
+        public bool IsAsync { get; set; }
+    }
 
 }
