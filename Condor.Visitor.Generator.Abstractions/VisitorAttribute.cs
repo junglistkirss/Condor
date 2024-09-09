@@ -21,7 +21,7 @@ public partial interface ISmartAggregateVisitor<out T, in TArgs> { }
 
 namespace Condor.Visitor.Generator.Abstractions
 {
-    [AttributeUsage(AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     public class VisitorAttribute<TElement>() : VisitorOfAttribute(typeof(TElement)) { }
 
 }

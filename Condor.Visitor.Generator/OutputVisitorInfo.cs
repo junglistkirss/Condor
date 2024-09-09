@@ -10,6 +10,7 @@ namespace Condor.Visitor.Generator
         public bool AddVisitFallBack { get; internal set; }
         public string AccessibilityModifier { get; internal set; }
         public TargetTypeInfo Owner { get; internal set; }
+        public string KeywordTypeDefinition { get; internal set; }
         public string OriginalTypeDefinition { get; internal set; }
         public string GenericTypesDefinition { get; internal set; }
         public string BaseTypeDefinition { get; internal set; }

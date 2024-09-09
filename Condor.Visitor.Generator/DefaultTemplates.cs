@@ -24,7 +24,7 @@ namespace {{OutputNamespace}}
     }
     {{/if}}
 
-    {{AccessibilityModifier}} partial interface {{{OriginalTypeDefinition}}}
+    {{AccessibilityModifier}} partial {{{KeywordTypeDefinition}}} {{{OriginalTypeDefinition}}}
     {
         {{#if AddVisitFallBack}}
         {{>Response}} VisitFallBack(

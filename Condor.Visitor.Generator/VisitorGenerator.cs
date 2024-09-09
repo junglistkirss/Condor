@@ -4,19 +4,14 @@ using System.Collections.Immutable;
 using Condor.Generator.Utils;
 using Condor.Generator.Utils.Visitors;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Threading;
 using Condor.Generator.Utils.Templating;
 using Condor.Visitor.Generator.Abstractions;
-using Condor.Visitor.Generator;
 
 namespace Condor.Visitor.Generator
 {
-
-
     [Generator]
     public class VisitorGenerator : IIncrementalGenerator
     {
-
         private const string VisitorTemplateName = "Visitor";
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -27,7 +22,7 @@ namespace Condor.Visitor.Generator
             var visitorsOf = context.SyntaxProvider
                .ForAttributeWithMetadataName(
                    typeof(VisitorAttribute).FullName,
-                   (node, _) => node is InterfaceDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
+                   (node, _) => node is TypeDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -36,6 +31,7 @@ namespace Condor.Visitor.Generator
                        return (
                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                            Owner: sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
+                           Keyword: ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
                            AccessibilityModifier: sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
                            VisitedType: ((INamedTypeSymbol)attr.ConstructorArguments.First().Value).Accept(TargetTypeVisitor.Instance),
                            IsAsync: attr.TryGetNamedArgument(nameof(VisitorOfAttribute.IsAsync), out bool w) ? w : false,
@@ -46,7 +42,7 @@ namespace Condor.Visitor.Generator
             var typedVisitors = context.SyntaxProvider
                .ForAttributeWithMetadataName(
                    typeof(VisitorAttribute<>).FullName,
-                   (node, _) => node is InterfaceDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
+                   (node, _) => node is TypeDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -55,6 +51,7 @@ namespace Condor.Visitor.Generator
                        return (
                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                            Owner: sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
+                           Keyword: ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
                            AccessibilityModifier: sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
                            VisitedType: attr.AttributeClass.TypeArguments.Single().Accept(TargetTypeVisitor.Instance),
                            IsAsync: attr.TryGetNamedArgument(nameof(VisitorOfAttribute.IsAsync), out bool w) ? w : false,
@@ -206,20 +203,21 @@ namespace Condor.Visitor.Generator
                     cancellationToken.ThrowIfCancellationRequested();
                     return x.Left.Select(e =>
                     {
-                        var (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect) = e;
+                        var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect) = e;
                         var ImplementationTypes = x.Right.Where(r => r.Correlation == Correlation).SelectMany(z => z.ImplementationTypes);
-                        return (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes);
+                        return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes);
                     });
                 })
                 .Combine(autoAcceptor.Collect())
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes) = x.Left;
                     var AutoImplementationTypes = x.Right.Where(r => r.Correlation == Correlation).SelectMany(z => z.ImplementationTypes);
                     return (
                         Correlation,
                         Owner,
+                        Keyword,
                         AccessibilityModifier,
                         VisitedType,
                         IsAsync,
@@ -232,11 +230,12 @@ namespace Condor.Visitor.Generator
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes) = x.Left;
                     var GenerateDefault = x.Right.FirstOrDefault(x => x.Correlation == Correlation);
                     return (
                         Correlation,
                         Owner,
+                        Keyword,
                         AccessibilityModifier,
                         VisitedType,
                         IsAsync,
@@ -250,25 +249,25 @@ namespace Condor.Visitor.Generator
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault) = x.Left;
                     bool GenerateVisitable = x.Right.Any(x => x == Correlation);
-                    return (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable);
+                    return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable);
                 })
                 .Combine(acceptParams.Collect())
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable) = x.Left;
                     IEnumerable<(TargetTypeInfo AcceptParamType, string AcceptParamName)> AcceptParams = x.Right.Where(x => x.Correlation == Correlation).SelectMany(x => x.AcceptParamTypes);
-                    return (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams);
+                    return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams);
                 })
                 .Combine(visitParams.Collect())
                 .Select((x, cancellationToken) =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams) = x.Left;
+                    var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams) = x.Left;
                     IEnumerable<(TargetTypeInfo VisitParamType, string VisitParamName)> VisitParams = x.Right.Where(x => x.Correlation == Correlation).SelectMany(x => x.VisitParamTypes);
-                    return (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams);
+                    return (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams);
                 })
                 /*.Select((x,_)=>
                 {
@@ -288,12 +287,13 @@ namespace Condor.Visitor.Generator
                 string template = templates
                      .FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
 
-                var (Correlation, Owner, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams) = data.Left;
+                var (Correlation, Owner, Keyword, AccessibilityModifier, VisitedType, IsAsync, AddVisitFallBack, AddVisitRedirect, ImplementationTypes, GenerateDefault, GenerateVisitable, AcceptParams, VisitParams) = data.Left;
                 string className = Owner.TypeName;
                 var template_datas = new OutputVisitorInfo
                 {
                     ClassName = className,
                     OutputNamespace = Owner.ContainingNamespace,
+                    KeywordTypeDefinition = Keyword,
                     OriginalTypeDefinition = Owner.TypeDefinition,
                     GenericTypesDefinition = Owner.IsGeneric ? Owner.TypeName.Replace(Owner.GenericBaseTypeName, "") : null,
                     BaseTypeDefinition = Owner.IsGeneric ? Owner.TypeName.Substring(0, Owner.TypeName.IndexOf("<")) : Owner.TypeName,
