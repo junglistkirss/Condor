@@ -68,7 +68,7 @@ namespace Condor.Visitor.Generator
 
             var acceptors = context.SyntaxProvider.ForAttributeWithMetadataName(
                    typeof(AcceptorAttribute<>).FullName,
-                   (node, _) => node is InterfaceDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
+                   (node, _) => node is TypeDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -88,7 +88,7 @@ namespace Condor.Visitor.Generator
             var autoAcceptor = context.SyntaxProvider
             .ForAttributeWithMetadataName(
             typeof(AutoAcceptorAttribute<>).FullName,
-            (node, _) => node is InterfaceDeclarationSyntax,
+            (node, _) => node is TypeDeclarationSyntax,
             (sc, cancellationToken) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -128,7 +128,7 @@ namespace Condor.Visitor.Generator
 
             var visitParams = context.SyntaxProvider.ForAttributeWithMetadataName(
                    typeof(VisitParamAttribute<>).FullName,
-                   (node, _) => node is InterfaceDeclarationSyntax,
+                   (node, _) => node is TypeDeclarationSyntax,
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -147,7 +147,7 @@ namespace Condor.Visitor.Generator
 
             var @default = context.SyntaxProvider.ForAttributeWithMetadataName(
                    typeof(GenerateDefaultAttribute).FullName,
-                   (node, _) => node is InterfaceDeclarationSyntax,
+                   (node, _) => node is TypeDeclarationSyntax,
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -168,7 +168,7 @@ namespace Condor.Visitor.Generator
 
             var visitable = context.SyntaxProvider.ForAttributeWithMetadataName(
                    typeof(GenerateVisitableAttribute).FullName,
-                   (node, _) => node is InterfaceDeclarationSyntax,
+                   (node, _) => node is TypeDeclarationSyntax,
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -177,7 +177,7 @@ namespace Condor.Visitor.Generator
 
             var acceptParams = context.SyntaxProvider.ForAttributeWithMetadataName(
                    typeof(AcceptParamAttribute<>).FullName,
-                   (node, _) => node is InterfaceDeclarationSyntax,
+                   (node, _) => node is TypeDeclarationSyntax,
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
