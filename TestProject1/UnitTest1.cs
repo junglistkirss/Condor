@@ -10,7 +10,6 @@ using Xunit;
 namespace Testproject1;
 
 
-
 public class VisitorGeneratorTests
 {
     [Fact]
@@ -58,7 +57,7 @@ namespace TestNamespace
 
     [Visitor]
     [AutoAcceptor<MyBaseType>(AddVisitRedirect = true)]
-    public partial interface TestVisitor {}
+    public partial interface TestVisitorWithRedirect {}
 }";
 
         var compilation = CreateCompilation(source);
@@ -68,7 +67,7 @@ namespace TestNamespace
         driver = driver.RunGenerators(compilation);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface TestVisitor", result.ToString());
+        Assert.Contains("public partial interface TestVisitorWithRedirect", result.ToString());
         Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
         Assert.Contains("void VisitRedirect(TestNamespace.MyBaseType element);", result.ToString());
@@ -545,5 +544,5 @@ namespace TestNamespace
         => CSharpCompilation.Create("compilation",
                 new[] { CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest)) },
                 new[] { MetadataReference.CreateFromFile(typeof(VisitorAttribute).GetTypeInfo().Assembly.Location) },
-                new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).WithAllowUnsafe(true));
 }

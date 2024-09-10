@@ -44,9 +44,7 @@ namespace {{OutputNamespace}}
         {{else}}
         {{>VisitOptionsClass}}
         {{/if}}
-    }
-
-    
+    }    
 }";
     }
 }
