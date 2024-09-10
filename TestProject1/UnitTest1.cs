@@ -42,7 +42,41 @@ namespace TestNamespace
         Assert.Contains("public partial interface TestVisitor", result.ToString());
         Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.DoesNotContain("void Visit(TestNamespace.IBaseType element);", result.ToString());
         Assert.DoesNotContain("void Visit(TestNamespace.ISubType element);", result.ToString());
+        Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", result.ToString());
+    }
+
+    [Fact]
+    public void Visitor_auto_interface_filterClass()
+    {
+        // Arrange
+        var source = @"
+using Condor.Visitor.Generator.Abstractions;
+
+namespace TestNamespace
+{
+    public class BaseType {}
+    public class MyType1 : BaseType{}
+    public class MyType2 : BaseType{}
+    public class ExtraType {}
+
+    [Visitor]
+    [AutoAcceptor<BaseType>()]
+    public partial interface TestVisitor {}
+}";
+
+        var compilation = CreateCompilation(source);
+        var generator = new VisitorGenerator();
+        // Act
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        driver = driver.RunGenerators(compilation);
+        // Assert
+        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
+        Assert.Contains("public partial interface TestVisitor", result.ToString());
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.DoesNotContain("void Visit(TestNamespace.BaseType element);", result.ToString());
         Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", result.ToString());
     }
 

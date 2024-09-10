@@ -212,6 +212,7 @@ namespace Condor.Visitor.Generator
                 AcceptedKind.Record => type.IsRecord,
                 AcceptedKind.Generic => type.IsGenericType,
                 AcceptedKind.Abstract => type.IsAbstract,
+                AcceptedKind.Concrete => !type.IsAbstract,
                 AcceptedKind.Sealed => type.IsSealed,
                 _ => true,
             };
@@ -251,7 +252,9 @@ namespace Condor.Visitor.Generator
                                              {
                                                  bool typePatternMatch = string.IsNullOrWhiteSpace(e.TypePattern)
                                                     || Regex.IsMatch(x.Accept(StrongNameVisitor.Instance), e.TypePattern);
-                                                 bool subTypeMatch = x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
+                                                 bool subTypeMatch = 
+                                                    e.VisitedType.TypeFullName !=  x.Accept(StrongNameVisitor.Instance)
+                                                    && x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
                                                         || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName);
                                                  if (typePatternMatch && subTypeMatch)
                                                  {

@@ -25,7 +25,8 @@ namespace Condor.Visitor.Generator.Abstractions
         Record = 8,
         Generic = 16,
         Abstract = 32,
-        Sealed = 64,
+        Concrete = 64,
+        Sealed = 128,
     }
 
 }
