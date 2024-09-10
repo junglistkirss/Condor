@@ -19,15 +19,11 @@
 {{#*inline ""VisitOptionsInterface""}}
     {{#each ImplementationGroup}}
         {{#if AddVisitFallBack}}
-        {{>Response}} VisitFallBack(
-            {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
-            {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{>Response}} VisitFallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
 
         {{#if AddVisitRedirect}}
-        {{>Response}} VisitRedirect(
-            {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
-            {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{>Response}} VisitRedirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
         {{#each ImplementationTypes}}
         {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, {{{.}}}{{/each}});
