@@ -6,6 +6,8 @@ using Condor.Generator.Utils.Visitors;
 using Microsoft.CodeAnalysis.CSharp;
 using Condor.Generator.Utils.Templating;
 using Condor.Visitor.Generator.Abstractions;
+using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 
 namespace Condor.Visitor.Generator
 {
@@ -47,7 +49,7 @@ namespace Condor.Visitor.Generator
                 }
                 catch (Exception ex)
                 {
-                    ctx.AddSource(sourceName+".error", $"/*{ex}*/");
+                    ctx.AddSource(sourceName + ".error", $"/*{ex}*/");
                 }
             });
 
@@ -190,7 +192,30 @@ namespace Condor.Visitor.Generator
                         );
                    });
         }
-
+        private static IEnumerable<AcceptedKind> GetFlags(AcceptedKind value)
+        {
+            foreach (AcceptedKind flag in Enum.GetValues(typeof(AcceptedKind)))
+            {
+                if (value.HasFlag(flag) && flag != 0)
+                {
+                    yield return flag;
+                }
+            }
+        }
+        private static bool CheckTypeAccept(AcceptedKind kind, INamedTypeSymbol type)
+        {
+            return kind switch
+            {
+                AcceptedKind.Class => type.TypeKind == TypeKind.Class,
+                AcceptedKind.Interface => type.TypeKind == TypeKind.Interface,
+                AcceptedKind.Struct => type.TypeKind == TypeKind.Struct,
+                AcceptedKind.Record => type.IsRecord,
+                AcceptedKind.Generic => type.IsGenericType,
+                AcceptedKind.Abstract => type.IsAbstract,
+                AcceptedKind.Sealed => type.IsSealed,
+                _ => true,
+            };
+        }
         private static IncrementalValuesProvider<AcceptorInfo> GetAutoAcceptorsInfo(IncrementalGeneratorInitializationContext context, IncrementalValueProvider<TypesProvider> types)
         {
             return context.SyntaxProvider
@@ -203,10 +228,10 @@ namespace Condor.Visitor.Generator
                             return sc.Attributes.Select(attr => (
                                  Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                                  VisitedType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance),
-                                 AssemblyPart: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPart), out string ap) ? ap : nameof(Condor),
-                                 AllowAbstract: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool abs) ? abs : false,
-                                 AllowGeneric: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowGeneric), out bool g) ? g : false,
-                                 AllowRecord: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool r) ? r : true,
+                                 AssemblyPattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPattern), out string ap) ? ap : sc.TargetSymbol.ContainingAssembly.Name,
+                                 TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string tp) ? tp : null,
+                                 Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
+                                 AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) ? a : false,
                                  AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) ? f : false,
                                  AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) ? d : false
                              ));
@@ -221,16 +246,25 @@ namespace Condor.Visitor.Generator
                                      return g.Select(e =>
                                      {
                                          IEnumerable<TargetTypeInfo> ImplementationTypes = discoveredTypes(
-                                             x => x.Name.StartsWith(e.AssemblyPart, StringComparison.OrdinalIgnoreCase),
-                                             x => (x.IsAbstract && e.AllowAbstract || !x.IsAbstract)
-                                              && (x.IsRecord && e.AllowRecord || !x.IsRecord)
-                                              && (x.IsGenericType && e.AllowGeneric || !x.IsGenericType)
-                                              && (
-                                                x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
-                                                || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
+                                             x => string.IsNullOrWhiteSpace(e.AssemblyPattern) || Regex.IsMatch(x.Name, e.AssemblyPattern),
+                                             x =>
+                                             {
+                                                 if (string.IsNullOrWhiteSpace(e.TypePattern) || Regex.IsMatch(x.Accept(StrongNameVisitor.Instance), e.TypePattern)
+                                                    && (x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
+                                                    || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)))
+                                                 {
+                                                     if (e.Accept != AcceptedKind.None)
+                                                     {
+                                                         if (e.AcceptAll)
+                                                             return GetFlags(e.Accept).All(v => CheckTypeAccept(v, x));
+                                                         else
+                                                             return GetFlags(e.Accept).Any(v => CheckTypeAccept(v, x));
+                                                     }
+                                                     return true;
+                                                 }
+                                                 return false;
+                                             });
 
-                                                )
-                                         );
                                          return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallBack, e.AddVisitRedirect, ImplementationTypes);
                                      });
                                  });
@@ -238,15 +272,15 @@ namespace Condor.Visitor.Generator
         }
 
         private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, OutputVisitorInfo)> CombineData(
-            IncrementalValuesProvider<VisitorInfo> visitors,
-            IncrementalValuesProvider<AcceptorInfo> acceptors,
-            IncrementalValuesProvider<AcceptorInfo> autoAcceptor,
-            IncrementalValuesProvider<OutputInfo> output,
-            IncrementalValuesProvider<GenerateDefaultInfo> defaultGen,
-            IncrementalValuesProvider<VistableInfo> visitable,
-            IncrementalValuesProvider<AcceptParamInfo> acceptParams,
-            IncrementalValuesProvider<VisitParamInfo> visitParams,
-            IncrementalValuesProvider<KeyedTemplate> additionalFiles)
+                IncrementalValuesProvider<VisitorInfo> visitors,
+                IncrementalValuesProvider<AcceptorInfo> acceptors,
+                IncrementalValuesProvider<AcceptorInfo> autoAcceptor,
+                IncrementalValuesProvider<OutputInfo> output,
+                IncrementalValuesProvider<GenerateDefaultInfo> defaultGen,
+                IncrementalValuesProvider<VistableInfo> visitable,
+                IncrementalValuesProvider<AcceptParamInfo> acceptParams,
+                IncrementalValuesProvider<VisitParamInfo> visitParams,
+                IncrementalValuesProvider<KeyedTemplate> additionalFiles)
         {
             return visitors
                 .Combine(output.Collect())

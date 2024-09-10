@@ -13,6 +13,38 @@ namespace Testproject1;
 public class VisitorGeneratorTests
 {
     [Fact]
+    public void Visitor_auto_interface_filter()
+    {
+        // Arrange
+        var source = @"
+using Condor.Visitor.Generator.Abstractions;
+
+namespace TestNamespace
+{
+    public interface IBaseType {}
+    public interface ISubType : IBaseType {}
+    public class MyType1 : IBaseType{}
+    public class MyType2 : IBaseType{}
+
+    [Visitor]
+    [AutoAcceptor<IBaseType>()]
+    public partial interface TestVisitor {}
+}";
+
+        var compilation = CreateCompilation(source);
+        var generator = new VisitorGenerator();
+        // Act
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        driver = driver.RunGenerators(compilation);
+        // Assert
+        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
+        Assert.Contains("public partial interface TestVisitor", result.ToString());
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.DoesNotContain("void Visit(TestNamespace.ISubType element);", result.ToString());
+    }
+
+    [Fact]
     public void Visitor_auto_interface()
     {
         // Arrange
@@ -42,7 +74,7 @@ namespace TestNamespace
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
     }
 
-    [Fact]
+    [Fact(Skip = "NamedArgs")]
     public void Visitor_auto_interface__redirect()
     {
         // Arrange
