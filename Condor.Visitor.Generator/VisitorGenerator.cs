@@ -295,6 +295,15 @@ namespace Condor.Visitor.Generator
                             };
                         }));
                     List<NamedParamInfo> accept = new List<NamedParamInfo>();
+                    if (Visitor.Owner.IsGeneric && Visitor.Owner.GenericTypes.Any(x => x.IsIn))
+                    {
+                        accept.AddRange(Visitor.Owner.GenericTypes.Where(x => x.IsIn).Select(x => new NamedParamInfo
+                        {
+                            ParamTypeFullName = x.Name,
+                            SanitizedParamName = x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower()
+
+                        }));
+                    }
                     if (AcceptParam.AcceptParamTypes != null && AcceptParam.AcceptParamTypes.Count() > 0)
                         accept.AddRange(AcceptParam.AcceptParamTypes.Select(x => new NamedParamInfo
                         {
