@@ -34,14 +34,21 @@ namespace Condor.Visitor.Generator
                 ImmutableArray<KeyedTemplate> templates = data.Item1;
                 OutputVisitorInfo template_datas = data.Item2;
 
-                TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                    .WithTemplates(templates).Build();
+                string sourceName = string.Join(".", template_datas.ClassName.SanitizeToHintName(), VisitorTemplateName, "generated");
+                try
+                {
+                    TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
+                        .WithTemplates(templates).Build();
 
-                string template = templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
+                    string template = templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
 
-
-                var result = templateProcessor.Render(template, template_datas);//, new RendererSettings())
-                ctx.AddSource(string.Join(".", template_datas.ClassName.SanitizeToHintName(), VisitorTemplateName, "generated"), result);
+                    var result = templateProcessor.Render(template, template_datas);//, new RendererSettings())
+                    ctx.AddSource(sourceName, result);
+                }
+                catch (Exception ex)
+                {
+                    ctx.AddSource(sourceName+".error", $"/*{ex}*/");
+                }
             });
 
         }
@@ -160,7 +167,7 @@ namespace Condor.Visitor.Generator
                    }).SelectMany((x, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
-                       return x.GroupBy(e => new { e.Correlation , e.ImplementationType}).Select(e =>
+                       return x.GroupBy(e => new { e.Correlation, e.ImplementationType }).Select(e =>
                        {
                            return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallBack: false, AddVisitRedirect: false, ImplementationTypes: e.Select(i => i.ImplementationType));
                        });
