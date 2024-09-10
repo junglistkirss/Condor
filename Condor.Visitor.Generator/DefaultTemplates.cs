@@ -23,7 +23,7 @@
             switch (element)
             {
                 {{#each ImplementationTypes}}
-                case {{{ParamTypeFullName}}} x:
+                case {{{TypeFullName}}} x:
                     {{#if ../../HasReturnType}} 
                     return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
@@ -54,7 +54,6 @@
         {{#if AddVisitFallBack}}
         {{>Response}} VisitFallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
-
         {{#if AddVisitRedirect}}
         {{>Response}} VisitRedirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
@@ -75,32 +74,61 @@ namespace {{OutputNamespace}}
         {{/if}}
     }
 
-     {{#if Visitable.GenerateVisitable}}
-     {{AccessibilityModifier}} partial interface {{{Visitable.VisitableTypeName}}} {
-         {{>LowResponse}} Accept{{{GenericTypesDefinition}}}(
-             {{BaseTypeDefinition}}{{{GenericTypesDefinition}}} visitor{{#each Visitable.VisitableParameters}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
-     }
-     {{/if}}
-    
+    {{#if Visitable.GenerateVisitable}}
+    {{AccessibilityModifier}} partial interface {{{Visitable.VisitableTypeName}}} {
+        {{>LowResponse}} Accept{{{GenericTypesDefinition}}}({{BaseTypeDefinition}}{{{GenericTypesDefinition}}} visitor{{#each Visitable.VisitableParameters}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+    }
+    {{/if}}
+
     {{#if Default.GenerateDefault}}
     {{#if Default.ForcePublic}}public {{else}}{{AccessibilityModifier}} {{/if}}{{#if Default.IsAbstract}}abstract {{/if}}{{#if Default.IsPartial}}partial {{/if}}class Default{{Default.DefaultTypeName}}{{{GenericTypesDefinition}}} : {{BaseTypeDefinition}}{{{GenericTypesDefinition}}}
     {
         {{#each ImplementationGroup}}
+        {{#if AddVisitFallBack}}
+        public partial {{>Response}} VisitFallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{/if}}
+        {{#if AddVisitRedirect}}
+        public virtual {{>Response}} VisitRedirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
+        {
+            switch (element)
+            {
+                {{#each ImplementationTypes}}
+                case {{{TypeFullName}}} x:
+                    {{#if ../../HasReturnType}} 
+                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    {{#if ../IsAsync}}
+                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    break;
+                    {{/if}}
+                    {{/if}}
+                {{/each}}
+                default:
+                    {{#if AddVisitFallBack}}
+                    return VisitFallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    throw new System.NotSupportedException(""""Unsupported type"""");
+                    {{/if}}
+            }
+        }
+        {{/if}}
         {{#each ImplementationTypes}}
         {{#if ../../Default.IsVisitAbstract}}
         public abstract {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
-        {{else}}
+        {{else}}        
         public virtual {{>ResponseNested}} Visit(
             {{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
         {
             {{#if ../../HasReturnType}}   
-            {{#if ../../Default.UseVisitFallBack}}
+            {{#if ../AddVisitFallback}}
             return VisitFallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
             {{else}}
             return default!;
             {{/if}}
             {{else}}
-            {{#if ../../Default.UseVisitFallBack}}
+            {{#if ../AddVisitFallback}}
             VisitFallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
             {{else}}
             return;
@@ -108,11 +136,10 @@ namespace {{OutputNamespace}}
             {{/if}}
         }
         {{/if}}
-        {{/each}}
-        {{/each}}
+    {{/each}}
+    {{/each}}
     }
     {{/if}}
-
 }";
     }
 }

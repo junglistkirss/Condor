@@ -9,7 +9,7 @@
     <Nullable>disable</Nullable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <PackageId>Condor.Visitor.Generator</PackageId>
-    <Version>3.0.4</Version>
+    <Version>4.0.0</Version>
     <Authors>Christian Bourbier</Authors>
     <Company>Christian Bourbier</Company>
     <PackageDescription>Visitor pattern generator</PackageDescription>
