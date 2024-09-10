@@ -2,7 +2,7 @@
 
 namespace Condor.Visitor.Generator.Abstractions
 {
-    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
     public class AutoAcceptorAttribute<T> : Attribute
     {
         public string AssemblyPart { get; set; } = default!;
