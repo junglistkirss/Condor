@@ -28,7 +28,7 @@ namespace Condor.Visitor.Generator
             IncrementalValuesProvider<VistableInfo> visitable = GetVisitableInfo(context);
             IncrementalValuesProvider<AcceptParamInfo> acceptParams = GetAcceptParamInfo(context);
             IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, OutputVisitorInfo)> combine = CombineData(visitors, acceptors, autoAcceptor, output, @default, visitable, acceptParams, visitParams, additionalFiles);
-            
+
             context.RegisterSourceOutput(combine, (ctx, data) =>
             {
                 ImmutableArray<KeyedTemplate> templates = data.Item1;
@@ -39,7 +39,7 @@ namespace Condor.Visitor.Generator
 
                 string template = templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
 
-                
+
                 var result = templateProcessor.Render(template, template_datas);//, new RendererSettings())
                 ctx.AddSource(string.Join(".", template_datas.ClassName.SanitizeToHintName(), VisitorTemplateName, "generated"), result);
             });
@@ -286,12 +286,23 @@ namespace Condor.Visitor.Generator
 
                         }));
                     }
-                    typedArgs.AddRange(VisitParam.VisitParamTypes.Select(x => new NamedParamInfo
-                    {
-                        ParamTypeFullName = x.VisitParamType.TypeFullName,
-                        SanitizedParamName = x.VisitParamName ?? x.VisitParamType.SanitizeTypeNameAsArg,
-                    }));
-                    return (Templates,  new OutputVisitorInfo
+                    if (VisitParam.VisitParamTypes != null && VisitParam.VisitParamTypes.Count() > 0)
+                        typedArgs.AddRange(VisitParam.VisitParamTypes.Select(x =>
+                        {
+                            return new NamedParamInfo
+                            {
+                                ParamTypeFullName = x.VisitParamType.TypeFullName,
+                                SanitizedParamName = x.VisitParamName ?? x.VisitParamType.SanitizeTypeNameAsArg,
+                            };
+                        }));
+                    List<NamedParamInfo> accept = new List<NamedParamInfo>();
+                    if (AcceptParam.AcceptParamTypes != null && AcceptParam.AcceptParamTypes.Count() > 0)
+                        accept.AddRange(AcceptParam.AcceptParamTypes.Select(x => new NamedParamInfo
+                        {
+                            SanitizedParamName = x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg,
+                            ParamTypeFullName = x.AcceptParamType.TypeFullName,
+                        }));
+                    return (Templates, new OutputVisitorInfo
                     {
                         AccessibilityModifier = Visitor.AccessibilityModifier,
                         ClassName = Visitor.Owner.TypeName,
@@ -324,11 +335,7 @@ namespace Condor.Visitor.Generator
                         Visitable = new OutputVisitableInfo
                         {
                             VisitableTypeName = Visitor.Owner.GenericBaseTypeName.Replace("Visitor", "") + "Visitable",
-                            VisitableParameters = AcceptParam.AcceptParamTypes.Select(x => new NamedParamInfo
-                            {
-                                SanitizedParamName = x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg,
-                                ParamTypeFullName = x.AcceptParamType.TypeFullName,
-                            }).ToArray(),
+                            VisitableParameters = accept.ToArray(),
                             GenerateVisitable = Visitable != default,
 
                         }

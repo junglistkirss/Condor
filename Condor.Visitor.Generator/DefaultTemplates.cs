@@ -12,7 +12,8 @@
 {{~#if ../IsAsync}}{{~#if ../HasReturnType}}ValueTask<{{{../ReturnType}}}>{{~else~}}ValueTask{{/if~}}{{else}}{{~#if ../HasReturnType}}{{{../ReturnType}}}{{~else~}}void{{/if~}}{{/if~}}
 {{/inline}}
 {{#*inline ""VisitOptions""}}
-    {{#if AddVisitFallBack}}
+    {{#each ImplementationGroup}}
+        {{#if AddVisitFallBack}}
         public virtual {{>Response}} VisitFallBack(
             {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
             {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
@@ -76,6 +77,10 @@
             }
         }
         {{/if}}
+        {{#each ImplementationTypes}}
+        public partial {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, {{{.}}}{{/each}});
+        {{/each}}
+    {{/each}}
 {{/inline}}
 
 
@@ -92,9 +97,8 @@ namespace {{OutputNamespace}}
 
     {{AccessibilityModifier}} partial {{{KeywordTypeDefinition}}} {{{OriginalTypeDefinition}}}
     {
-        {{#if IsSolid}}
-        {{>VisitOptions}}
-        {{/else}}
+        {{#if IsInterface}}
+        {{#each ImplementationGroup}}
         {{#if AddVisitFallBack}}
         {{>Response}} VisitFallBack(
             {{{VisitedType.TypeFullName}}} element{{#each TypedArgs}}, 
@@ -107,13 +111,13 @@ namespace {{OutputNamespace}}
             {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each Args}}, 
             {{{.}}}{{/each}});
         {{/if}}
-        {{/if}}
         {{#each ImplementationTypes}}
-        {{>ResponseNested}} Visit(
-            {{{TypeFullName}}} element{{#each ../TypedArgs}}, 
-            {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, 
-            {{{.}}}{{/each}});
+        {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamType.TypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, {{{.}}}{{/each}});
         {{/each}}
+        {{/each}}
+        {{else}}
+        {{>VisitOptions}}
+        {{/if}}
     }
 
     {{#if Default.GenerateDefault}}

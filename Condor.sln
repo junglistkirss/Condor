@@ -21,6 +21,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.With.Generator", "Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.With.Generator.Abstractions", "Condor.With.Generator.Abstractions\Condor.With.Generator.Abstractions.csproj", "{3F4A1D13-524B-403C-9B58-6FC96371E33A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6DFC1FDE-435C-4DC6-AD4F-163B0FBB1CB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "TestProject1\TestProject1.csproj", "{3463B983-5787-46B2-A029-76C841026E03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,9 +67,16 @@ Global
 		{3F4A1D13-524B-403C-9B58-6FC96371E33A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F4A1D13-524B-403C-9B58-6FC96371E33A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F4A1D13-524B-403C-9B58-6FC96371E33A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3463B983-5787-46B2-A029-76C841026E03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3463B983-5787-46B2-A029-76C841026E03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3463B983-5787-46B2-A029-76C841026E03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3463B983-5787-46B2-A029-76C841026E03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3463B983-5787-46B2-A029-76C841026E03} = {6DFC1FDE-435C-4DC6-AD4F-163B0FBB1CB2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6CC225C5-075F-4263-8643-C75DE4474106}

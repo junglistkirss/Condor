@@ -15,7 +15,7 @@ namespace Condor.Visitor.Generator
     {
         public string AccessibilityModifier { get; internal set; }
         public string KeywordTypeDefinition { get; internal set; }
-        public bool IsInterface => KeywordTypeDefinition != "interface";
+        public bool IsInterface => KeywordTypeDefinition == "interface";
         public string OriginalTypeDefinition { get; internal set; }
 
         //public TargetTypeInfo Owner { get; internal set; }
