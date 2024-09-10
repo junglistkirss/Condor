@@ -162,7 +162,7 @@ namespace Condor.Visitor.Generator
                        cancellationToken.ThrowIfCancellationRequested();
                        return x.GroupBy(e => new { e.Correlation , e.ImplementationType}).Select(e =>
                        {
-                           return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallBack: false, AddVisitRedirect: false, ThrowOnFallBack: false, e.Select(i => i.ImplementationType));
+                           return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallBack: false, AddVisitRedirect: false, ImplementationTypes: e.Select(i => i.ImplementationType));
                        });
                    });
         }
@@ -201,8 +201,7 @@ namespace Condor.Visitor.Generator
                                  AllowGeneric: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowGeneric), out bool g) ? g : false,
                                  AllowRecord: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AllowAbstract), out bool r) ? r : true,
                                  AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) ? f : false,
-                                 AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) ? d : false,
-                                 ThrowOnFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.ThrowOnFallBack), out bool t) ? t : false
+                                 AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) ? d : false
                              ));
                         }).Combine(types).SelectMany((x, cancellationToken) =>
                         {
@@ -225,7 +224,7 @@ namespace Condor.Visitor.Generator
 
                                                 )
                                          );
-                                         return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallBack, e.AddVisitRedirect, e.ThrowOnFallBack, ImplementationTypes);
+                                         return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallBack, e.AddVisitRedirect, ImplementationTypes);
                                      });
                                  });
                         });
@@ -322,7 +321,6 @@ namespace Condor.Visitor.Generator
                             AddVisitFallBack = x.AddVisitFallBack,
                             AddVisitRedirect = x.AddVisitRedirect,
                             ImplementationTypes = x.ImplementationTypes.ToArray(),
-                            ThrowOnFallBack = x.ThrowOnFallBack,
                         }).ToArray(),
                         Default = new OutputVisitorDefaultInfo
                         {
@@ -347,7 +345,8 @@ namespace Condor.Visitor.Generator
 
     internal record struct VisitorInfo(string Correlation, TargetTypeInfo Owner, string Keyword, string AccessibilityModifier, bool IsAsync) { }
     internal record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
-        , bool AddVisitFallBack, bool AddVisitRedirect, bool ThrowOnFallBack, IEnumerable<TargetTypeInfo> ImplementationTypes) { }
+        , bool AddVisitFallBack, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
+    { }
     internal record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
     internal record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string VisitParamName)> VisitParamTypes) { }
     internal record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }

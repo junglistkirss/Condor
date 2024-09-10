@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Condor.Visitor.Generator.Abstractions\Condor.Visitor.Generator.Abstractions.csproj" />
+    <ProjectReference Include="..\Condor.Visitor.Generator.Abstractions\Condor.Visitor.Generator.Abstractions.csproj" PrivateAssets="true" />
     <ProjectReference Include="..\Condor.Visitor.Generator\Condor.Visitor.Generator.csproj" />
   </ItemGroup>
 

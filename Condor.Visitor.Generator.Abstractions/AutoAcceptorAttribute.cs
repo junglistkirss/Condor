@@ -12,7 +12,6 @@ namespace Condor.Visitor.Generator.Abstractions
         
         public bool AddVisitRedirect { get; set; } = false;
         public bool AddVisitFallBack { get; set; } = false;
-        public bool ThrowOnFallBack { get; set; } = true;
 
     }
 

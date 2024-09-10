@@ -11,6 +11,36 @@
 {{/inline}}
 {{#*inline ""VisitOptionsClass""}}
     {{#each ImplementationGroup}}
+        {{#if AddVisitFallBack}}
+        public partial {{>Response}} VisitFallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{/if}}
+        {{#if AddVisitRedirect}}
+        public virtual {{>Response}} VisitRedirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
+        {
+            switch (element)
+            {
+                {{#each ImplementationTypes}}
+                case {{{ParamTypeFullName}}} x:
+                    {{#if ../../HasReturnType}} 
+                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    {{#if ../IsAsync}}
+                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    break;
+                    {{/if}}
+                    {{/if}}
+                {{/each}}
+                default:
+                    {{#if AddVisitFallBack}}
+                    return VisitFallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    throw new System.NotSupportedException(""Unsupported type"");
+                    {{/if}}
+            }
+        }
+        {{/if}}
         {{#each ImplementationTypes}}
         public partial {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/each}}

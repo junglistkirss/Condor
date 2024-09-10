@@ -543,6 +543,6 @@ namespace TestNamespace
     private static Compilation CreateCompilation(string source)
         => CSharpCompilation.Create("compilation",
                 new[] { CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest)) },
-                new[] { MetadataReference.CreateFromFile(typeof(VisitorAttribute).GetTypeInfo().Assembly.Location) },
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).WithAllowUnsafe(true));
+                new[] { MetadataReference.CreateFromFile(typeof(Object).GetTypeInfo().Assembly.Location) , MetadataReference.CreateFromFile(typeof(VisitorAttribute).GetTypeInfo().Assembly.Location) },
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 }
