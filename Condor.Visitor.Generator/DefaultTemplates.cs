@@ -88,14 +88,14 @@ namespace {{OutputNamespace}}
         {{#each ImplementationGroup}}
         {{#each ImplementationTypes}}
         {{#if ../../Default.IsVisitAbstract}}
-        public abstract {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}});
+        public abstract {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{else}}
         public virtual {{>ResponseNested}} Visit(
-            {{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}}{{/each}})
+            {{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
         {
             {{#if ../../HasReturnType}}   
             {{#if ../../Default.UseVisitFallBack}}
-            return VisitFallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}}{{/each}});
+            return VisitFallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
             {{else}}
             return default!;
             {{/if}}
