@@ -109,7 +109,7 @@ namespace {{OutputNamespace}}
                     {{#if AddVisitFallBack}}
                     return VisitFallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
-                    throw new System.NotSupportedException(""""Unsupported type"""");
+                    throw new System.NotSupportedException();
                     {{/if}}
             }
         }
