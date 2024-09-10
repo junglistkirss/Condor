@@ -249,9 +249,11 @@ namespace Condor.Visitor.Generator
                                              x => string.IsNullOrWhiteSpace(e.AssemblyPattern) || Regex.IsMatch(x.Name, e.AssemblyPattern),
                                              x =>
                                              {
-                                                 if (string.IsNullOrWhiteSpace(e.TypePattern) || Regex.IsMatch(x.Accept(StrongNameVisitor.Instance), e.TypePattern)
-                                                    && (x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
-                                                    || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)))
+                                                 bool typePatternMatch = string.IsNullOrWhiteSpace(e.TypePattern)
+                                                    || Regex.IsMatch(x.Accept(StrongNameVisitor.Instance), e.TypePattern);
+                                                 bool subTypeMatch = x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
+                                                        || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName);
+                                                 if (typePatternMatch && subTypeMatch)
                                                  {
                                                      if (e.Accept != AcceptedKind.None)
                                                      {

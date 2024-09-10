@@ -25,6 +25,7 @@ namespace TestNamespace
     public interface ISubType : IBaseType {}
     public class MyType1 : IBaseType{}
     public class MyType2 : IBaseType{}
+    public class ExtraType {}
 
     [Visitor]
     [AutoAcceptor<IBaseType>()]
@@ -42,6 +43,7 @@ namespace TestNamespace
         Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
         Assert.DoesNotContain("void Visit(TestNamespace.ISubType element);", result.ToString());
+        Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", result.ToString());
     }
 
     [Fact]
