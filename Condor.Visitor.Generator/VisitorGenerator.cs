@@ -160,9 +160,9 @@ namespace Condor.Visitor.Generator
                    }).SelectMany((x, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
-                       return x.GroupBy(e => e.Correlation).Select(e =>
+                       return x.GroupBy(e => new { e.Correlation , e.ImplementationType}).Select(e =>
                        {
-                           return new AcceptorInfo(e.Key, AddVisitFallBack: false, AddVisitRedirect: false, ThrowOnFallBack: false, e.Select(i => i.ImplementationType));
+                           return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallBack: false, AddVisitRedirect: false, ThrowOnFallBack: false, e.Select(i => i.ImplementationType));
                        });
                    });
         }
@@ -225,7 +225,7 @@ namespace Condor.Visitor.Generator
 
                                                 )
                                          );
-                                         return new AcceptorInfo(e.Correlation, e.AddVisitFallBack, e.AddVisitRedirect, e.ThrowOnFallBack, ImplementationTypes);
+                                         return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallBack, e.AddVisitRedirect, e.ThrowOnFallBack, ImplementationTypes);
                                      });
                                  });
                         });
@@ -318,6 +318,7 @@ namespace Condor.Visitor.Generator
                         TypedArgs = typedArgs.ToArray(),
                         ImplementationGroup = Acceptors.Union(AutoAcceptors).Select(x => new ImplGroup
                         {
+                            VisitedType = x.VisitedType,
                             AddVisitFallBack = x.AddVisitFallBack,
                             AddVisitRedirect = x.AddVisitRedirect,
                             ImplementationTypes = x.ImplementationTypes.ToArray(),
@@ -345,7 +346,8 @@ namespace Condor.Visitor.Generator
     }
 
     internal record struct VisitorInfo(string Correlation, TargetTypeInfo Owner, string Keyword, string AccessibilityModifier, bool IsAsync) { }
-    internal record struct AcceptorInfo(string Correlation, bool AddVisitFallBack, bool AddVisitRedirect, bool ThrowOnFallBack, IEnumerable<TargetTypeInfo> ImplementationTypes) { }
+    internal record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
+        , bool AddVisitFallBack, bool AddVisitRedirect, bool ThrowOnFallBack, IEnumerable<TargetTypeInfo> ImplementationTypes) { }
     internal record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
     internal record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string VisitParamName)> VisitParamTypes) { }
     internal record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }

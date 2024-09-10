@@ -5,6 +5,7 @@ namespace Condor.Visitor.Generator
 {
     internal record class ImplGroup
     {
+        public TargetTypeInfo VisitedType { get; internal set; }
         public bool AddVisitFallBack { get; internal set; }
         public bool ThrowOnFallBack { get; internal set; }
         public bool AddVisitRedirect { get; internal set; }
