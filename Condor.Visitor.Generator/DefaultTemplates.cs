@@ -15,29 +15,29 @@
 {{#*inline ""VisitOptionsClass""}}
     {{#each ImplementationGroup}}
         {{#if AddVisitFallBack}}
-        public partial {{>Response}} VisitFallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        public partial {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
         {{#if AddVisitRedirect}}
-        public virtual {{>Response}} VisitRedirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
+        public virtual {{>Response}} {{../VisitMethodName}}Redirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
         {
             switch (element)
             {
                 {{#each ImplementationTypes}}
                 case {{{TypeFullName}}} x:
                     {{#if ../../HasReturnType}} 
-                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     {{#if ../IsAsync}}
-                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
-                    Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     break;
                     {{/if}}
                     {{/if}}
                 {{/each}}
                 default:
                     {{#if AddVisitFallBack}}
-                    return VisitFallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     throw new System.NotSupportedException(""Unsupported type"");
                     {{/if}}
@@ -45,20 +45,20 @@
         }
         {{/if}}
         {{#each ImplementationTypes}}
-        public partial {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        public partial {{>ResponseNested}} {{../../VisitMethodName}}({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/each}}
     {{/each}}
 {{/inline}}
 {{#*inline ""VisitOptionsInterface""}}
     {{#each ImplementationGroup}}
         {{#if AddVisitFallBack}}
-        {{>Response}} VisitFallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
         {{#if AddVisitRedirect}}
-        {{>Response}} VisitRedirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{>Response}} {{../VisitMethodName}}Redirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
         {{#each ImplementationTypes}}
-        {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, {{{.}}}{{/each}});
+        {{>ResponseNested}} {{../../VisitMethodName}}({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}}{{#each ../Args}}, {{{.}}}{{/each}});
         {{/each}}
     {{/each}}
 {{/inline}}
@@ -73,41 +73,39 @@ namespace {{OutputNamespace}}
         {{>VisitOptionsClass}}
         {{/if}}
     }
-
     {{#if Visitable.GenerateVisitable}}
     {{AccessibilityModifier}} partial interface {{{Visitable.VisitableTypeName}}} {
-        {{>LowResponse}} Accept{{{GenericTypesDefinition}}}({{BaseTypeDefinition}}{{{GenericTypesDefinition}}} visitor{{#each Visitable.VisitableParameters}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{>LowResponse}} {{Visitable.AcceptMethodName}}{{{GenericTypesDefinition}}}({{BaseTypeDefinition}}{{{GenericTypesDefinition}}} visitor{{#each Visitable.VisitableParameters}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
     }
     {{/if}}
-
     {{#if Default.GenerateDefault}}
     {{#if Default.ForcePublic}}public {{else}}{{AccessibilityModifier}} {{/if}}{{#if Default.IsAbstract}}abstract {{/if}}{{#if Default.IsPartial}}partial {{/if}}class Default{{Default.DefaultTypeName}}{{{GenericTypesDefinition}}} : {{BaseTypeDefinition}}{{{GenericTypesDefinition}}}
     {
         {{#each ImplementationGroup}}
         {{#if AddVisitFallBack}}
-        public partial {{>Response}} VisitFallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        public partial {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{/if}}
         {{#if AddVisitRedirect}}
-        public virtual {{>Response}} VisitRedirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
+        public virtual {{>Response}} {{../VisitMethodName}}Redirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
         {
             switch (element)
             {
                 {{#each ImplementationTypes}}
                 case {{{TypeFullName}}} x:
                     {{#if ../../HasReturnType}} 
-                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     {{#if ../IsAsync}}
-                    return Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
-                    Visit(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     break;
                     {{/if}}
                     {{/if}}
                 {{/each}}
                 default:
                     {{#if AddVisitFallBack}}
-                    return VisitFallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     throw new System.NotSupportedException();
                     {{/if}}
@@ -116,20 +114,19 @@ namespace {{OutputNamespace}}
         {{/if}}
         {{#each ImplementationTypes}}
         {{#if ../../Default.IsVisitAbstract}}
-        public abstract {{>ResponseNested}} Visit({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        public abstract {{>ResponseNested}} {{../../VisitMethodName}}({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{else}}        
-        public virtual {{>ResponseNested}} Visit(
-            {{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
+        public virtual {{>ResponseNested}} {{../../VisitMethodName}}({{{TypeFullName}}} element{{#each ../../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
         {
             {{#if ../../HasReturnType}}   
             {{#if ../AddVisitFallback}}
-            return VisitFallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+            return {{../../VisitMethodName}}FallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
             {{else}}
             return default!;
             {{/if}}
             {{else}}
             {{#if ../AddVisitFallback}}
-            VisitFallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+            {{../../VisitMethodName}}FallBack(element{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
             {{else}}
             return;
             {{/if}}

@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <PackageId>Condor.Visitor.Generator.Abstractions</PackageId>
-    <Version>4.0.6</Version>
+    <Version>4.1.0</Version>
     <Authors>Christian Bourbier</Authors>
     <Company>Christian Bourbier</Company>
     <PackageDescription>Attributes to instruct code generation for Visitor pattern</PackageDescription>

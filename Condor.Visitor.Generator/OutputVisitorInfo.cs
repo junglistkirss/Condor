@@ -15,6 +15,7 @@ namespace Condor.Visitor.Generator
 
     internal record class OutputVisitorInfo : GeneratedTypeInfo
     {
+        public string VisitMethodName { get; internal set; }
         public string AccessibilityModifier { get; internal set; }
         public string KeywordTypeDefinition { get; internal set; }
         public bool IsInterface => KeywordTypeDefinition == "interface";
