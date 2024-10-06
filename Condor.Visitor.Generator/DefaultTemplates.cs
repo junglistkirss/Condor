@@ -95,7 +95,7 @@ namespace {{OutputNamespace}}
                     {{#if ../../HasReturnType}} 
                     return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
-                    {{#if ../IsAsync}}
+                    {{#if ../../IsAsync}}
                     return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
