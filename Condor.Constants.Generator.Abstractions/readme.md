@@ -1,0 +1,1 @@
+Condor.Constants.Generator.Abstractions

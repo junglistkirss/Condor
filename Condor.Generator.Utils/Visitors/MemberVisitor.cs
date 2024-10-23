@@ -11,6 +11,7 @@ namespace Condor.Generator.Utils.Visitors
         {
             return new MemberInfo
             {
+                IsConstant = symbol.HasConstantValue,
                 IsNullable = symbol.NullableAnnotation == NullableAnnotation.Annotated,
                 MemberName = symbol.Name,
                 MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance),
@@ -21,6 +22,7 @@ namespace Condor.Generator.Utils.Visitors
         {
             return new MemberInfo
             {
+                IsConstant = false,
                 IsNullable = symbol.NullableAnnotation == NullableAnnotation.Annotated,
                 MemberName = symbol.Name,
                 MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance),
