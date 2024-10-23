@@ -50,7 +50,7 @@ namespace Condor.Constants.Generator
             return context.SyntaxProvider
                .ForAttributeWithMetadataName<IEnumerable<ConstsOwnerInfo>>(
                    typeof(ConstantsAttribute).FullName,
-                   (node, _) => node is TypeDeclarationSyntax i && i.Modifiers.Any(SyntaxKind.PartialKeyword),
+                   (node, _) => node is TypeDeclarationSyntax,
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
