@@ -6,6 +6,6 @@ namespace Condor.Constants.Generator
     {
         public string TemplateName { get; internal set; }
         public TargetTypeInfo ConstantType { get; internal set; }
-        public TargetTypeInfo[] Map { get; internal set; }
+        public ConstantInfo[] Map { get; internal set; }
     }
 }
