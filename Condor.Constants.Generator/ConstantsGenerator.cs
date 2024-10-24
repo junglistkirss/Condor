@@ -62,7 +62,7 @@ namespace Condor.Constants.Generator
                                 .Where(x => x.IsConstant)
                                 .Select(x =>
                                 {
-                                    string[] partials = x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.NamedArguments[0].ArgumentValue?.ToString()).ToArray();
+                                    string[] partials = x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString()).ToArray();
                                     return new ConstInfo(x, partials ?? []);
                                 }).ToArray();
 
