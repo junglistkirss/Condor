@@ -3,6 +3,7 @@ using HandlebarsDotNet.Helpers.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Condor.Generator.Utils.Templating
 {
@@ -44,7 +45,68 @@ namespace Condor.Generator.Utils.Templating
                 return obj.SanitizeBaseOrInterfaceName();
 
             });
-
+            processor.RegisterHelper("Strip", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                string replace = args.Last().ToString();
+                return obj.Replace(replace, "");
+            });
+            processor.RegisterHelper("Replace", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                if (args.Length == 3)
+                {
+                    string replace = args[1].ToString();
+                    string replacement = args[2].ToString();
+                    return obj.Replace(replace, replacement);
+                }
+                return obj;
+            });
+            processor.RegisterHelper("Trim", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                string _char = args.Last().ToString();
+                return obj.Trim(_char.ToCharArray());
+            });
+            processor.RegisterHelper("TrimStart", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                string _char = args.Last().ToString();
+                return obj.TrimStart(_char.ToCharArray());
+            });
+            processor.RegisterHelper("TrimEnd", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                string _char = args.Last().ToString();
+                return obj.TrimEnd(_char.ToCharArray());
+            });
+            processor.RegisterHelper("Uppercase", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                return obj.ToUpper();
+            });
+            processor.RegisterHelper("Lowercase", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                return obj.ToLower();
+            });
+            processor.RegisterHelper("Substring", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                if (args.Length == 2)
+                {
+                    int start = (int)args[1];
+                    return obj.Substring(start);
+                }
+                else if (args.Length == 3)
+                {
+                    int start = (int)args[1];
+                    int end = (int)args[2];
+                    return obj.Substring(start, end);
+                }
+                else
+                    return obj;
+            });
             if (templates is not null)
                 foreach (KeyedTemplate tmpl in templates)
                 {
