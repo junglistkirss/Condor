@@ -54,23 +54,22 @@ namespace Condor.Constants.Generator
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
-                       var attr = sc.Attributes.Single();
                        List<ConstsOwnerInfo> consts = [];
-                       foreach (var item in sc.Attributes)
+                       foreach (AttributeData attr in sc.Attributes)
                        {
                            var members = sc.TargetSymbol
                                 .Accept(MembersVisitor<IFieldSymbol>.Instance)
                                 .Where(x => x.IsConstant)
                                 .Select(x =>
                                 {
-                                    string[] partials = x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.NamedArguments[0].ArgumentValue?.ToString()).ToArray();
+                                    string[] partials = x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString()).ToArray();
                                     return new ConstInfo(x, partials ?? []);
                                 }).ToArray();
 
                            consts.Add(new ConstsOwnerInfo(
                                sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                                sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
-                               attr.TryGetNamedArgument(nameof(ConstantsAttribute.Template), out string w) ? w : string.Empty,
+                               attr.ConstructorArguments[0].Value?.ToString(),
                                members
                             ));
                        }
