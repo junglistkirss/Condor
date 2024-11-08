@@ -25,9 +25,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6DFC1FDE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject1", "TestProject1\TestProject1.csproj", "{3463B983-5787-46B2-A029-76C841026E03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Condor.Constants.Generator.Abstractions", "Condor.Constants.Generator.Abstractions\Condor.Constants.Generator.Abstractions.csproj", "{26001AC1-7F2A-42D0-BF4B-AF5EBAA9F86A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.Constants.Generator.Abstractions", "Condor.Constants.Generator.Abstractions\Condor.Constants.Generator.Abstractions.csproj", "{26001AC1-7F2A-42D0-BF4B-AF5EBAA9F86A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Condor.Constants.Generator", "Condor.Constants.Generator\Condor.Constants.Generator.csproj", "{8F705EFD-7C4A-4A92-B086-6A32782B38EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Condor.Constants.Generator", "Condor.Constants.Generator\Condor.Constants.Generator.csproj", "{8F705EFD-7C4A-4A92-B086-6A32782B38EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Condor.Files.Generator.Abstractions", "Condor.Files.Generator.Abstractions\Condor.Files.Generator.Abstractions.csproj", "{B5CDBFFF-0AD9-4920-83A1-1CE7DB0F984B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Condor.Files.Generator", "Condor.Files.Generator\Condor.Files.Generator.csproj", "{F85A546D-96EA-4EB8-AE88-9D23B4391FE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +87,14 @@ Global
 		{8F705EFD-7C4A-4A92-B086-6A32782B38EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F705EFD-7C4A-4A92-B086-6A32782B38EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F705EFD-7C4A-4A92-B086-6A32782B38EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5CDBFFF-0AD9-4920-83A1-1CE7DB0F984B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5CDBFFF-0AD9-4920-83A1-1CE7DB0F984B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5CDBFFF-0AD9-4920-83A1-1CE7DB0F984B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5CDBFFF-0AD9-4920-83A1-1CE7DB0F984B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F85A546D-96EA-4EB8-AE88-9D23B4391FE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F85A546D-96EA-4EB8-AE88-9D23B4391FE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F85A546D-96EA-4EB8-AE88-9D23B4391FE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F85A546D-96EA-4EB8-AE88-9D23B4391FE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
