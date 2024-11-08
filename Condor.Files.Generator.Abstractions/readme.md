@@ -1,0 +1,1 @@
+# Condor.Files.Generator.Abstractions

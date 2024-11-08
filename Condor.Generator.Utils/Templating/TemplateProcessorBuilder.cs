@@ -90,6 +90,11 @@ namespace Condor.Generator.Utils.Templating
                 string obj = args.First().ToString();
                 return obj.ToLower();
             });
+            processor.RegisterHelper("Capitalize", (ctx, args) =>
+            {
+                string obj = args.First().ToString();
+                return obj.ToUpper();
+            });
             processor.RegisterHelper("Substring", (ctx, args) =>
             {
                 string obj = args.First().ToString();
