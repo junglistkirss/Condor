@@ -107,17 +107,6 @@ namespace Condor.Constants.Generator
                         Files = addons.Where(x => Regex.IsMatch(x.Path, intermediate.Pattern)).Select(x => x.File).ToArray(),
                     });
                 });
-            //.Select((data, _) =>
-            //{
-            //    return (data.Right, new IntermediateInfo
-            //    {
-            //        ClassName = data.Left.Owner.TypeName,
-            //        TemplateName = data.Left.TemplateName,
-            //        OutputNamespace = data.Left.Owner.ContainingNamespace,
-            //        Type = data.Left.Owner,
-            //        Files = data.Left.Files,
-            //    });
-            //});
         }
 
         internal record struct IntermediateInfo(TargetTypeInfo Owner, string TemplateName, string Pattern);
