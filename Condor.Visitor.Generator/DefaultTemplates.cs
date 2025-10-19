@@ -27,7 +27,7 @@
                     {{#if ../../HasReturnType}} 
                     return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
-                    {{#if ../IsAsync}}
+                    {{#if ../../IsAsync}}
                     return {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     {{../../VisitMethodName}}(x{{#each ../../TypedArgs}}, {{SanitizedParamName}}{{/each}});
@@ -37,7 +37,15 @@
                 {{/each}}
                 default:
                     {{#if AddVisitFallBack}}
+                    {{#if ../../HasReturnType}} 
                     return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    {{#if ../../IsAsync}}
+                    return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{/if}}
+                    {{/if}}
                     {{else}}
                     throw new System.NotSupportedException(""Unsupported type"");
                     {{/if}}
@@ -83,7 +91,18 @@ namespace {{OutputNamespace}}
     {
         {{#each ImplementationGroup}}
         {{#if AddVisitFallBack}}
+        {{#if Default.IsAbstract}}
+        public abstract {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{else}}
+        {{#if Default.IsPartial}}
         public partial {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
+        {{else}}
+        public virtual {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
+        {
+            throw new System.NotImplementedException();
+        }
+        {{/if}}
+        {{/if}}
         {{/if}}
         {{#if AddVisitRedirect}}
         public virtual {{>Response}} {{../VisitMethodName}}Redirect({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
@@ -105,7 +124,15 @@ namespace {{OutputNamespace}}
                 {{/each}}
                 default:
                     {{#if AddVisitFallBack}}
+                    {{#if ../HasReturnType}}
                     return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    {{#if ../IsAsync}}
+                    return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{else}}
+                    {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    {{/if}}
+                    {{/if}}
                     {{else}}
                     throw new System.NotSupportedException();
                     {{/if}}

@@ -278,7 +278,7 @@ namespace TestNamespace
         var compilation = CreateCompilation(source);
         var generator = new VisitorGenerator();
         // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([GeneratorExtensions.AsSourceGenerator(generator)], parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor));
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var compil, out var diag);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
@@ -404,7 +404,37 @@ namespace TestNamespace
     }
 
 
+    [Fact(Skip = "NamedArgs to support AddVisitFallBack")]
+    public void Visitor_interfaceFallBack()
+    {
+        // Arrange
+        var source = @"
+using Condor.Visitor.Generator.Abstractions;
 
+namespace TestNamespace
+{
+    public abstract class MyType {}
+    public class MyType1 : MyType {}
+    public class MyType2 : MyType {}
+
+    [Visitor]
+    [AutoAcceptor<MyType>(Accept = AcceptedKind.Concrete, AddVisitRedirect = true, AddVisitFallBack = true)]
+    [GenerateVisitable, GenerateDefault(Options = OptionsDefault.AsbtractPartial, VisitOptions = VisitOptions.AbstractVisit)]
+    public partial interface TestVisitor {}
+}";
+        var compilation = CreateCompilation(source);
+        var generator = new VisitorGenerator();
+        // Act
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([GeneratorExtensions.AsSourceGenerator(generator)], parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor));
+        driver = driver.RunGenerators(compilation);
+        // Assert
+        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
+        Assert.Contains("public partial interface TestVisitor", result.ToString());
+        Assert.DoesNotContain("void Visit(TestNamespace.MyType element);", result.ToString());
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public abstract void VisitFallback(TestNamespace.MyType element)", result.ToString());
+    }
     [Fact]
     public void Visitor_interface()
     {
@@ -577,6 +607,8 @@ namespace TestNamespace
         Assert.Contains("public partial class TestVisitor", result.ToString());
         Assert.Contains("public partial void Visit(TestNamespace.MyType element);", result.ToString());
     }
+
+
     [Fact]
     public void Visitor_auto_class()
     {
