@@ -404,7 +404,7 @@ namespace TestNamespace
     }
 
 
-    [Fact(Skip = "NamedArgs to support AddVisitFallBack")]
+    [Fact/*(Skip = "NamedArgs to support AddVisitFallBack")*/]
     public void Visitor_interfaceFallBack()
     {
         // Arrange
@@ -424,16 +424,25 @@ namespace TestNamespace
 }";
         var compilation = CreateCompilation(source);
         var generator = new VisitorGenerator();
+        var compilationDiagnostics = compilation.GetDiagnostics();
+            Assert.Empty(compilationDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+
         // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create([GeneratorExtensions.AsSourceGenerator(generator)], parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor));
-        driver = driver.RunGenerators(compilation);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [GeneratorExtensions.AsSourceGenerator(generator)],
+            parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor)
+        );
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
         // Assert
+        Assert.Empty(diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface TestVisitor", result.ToString());
-        Assert.DoesNotContain("void Visit(TestNamespace.MyType element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
-        Assert.Contains("public abstract void VisitFallback(TestNamespace.MyType element)", result.ToString());
+        string code = result.ToString();
+        Assert.Contains("public partial interface TestVisitor", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.MyType element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
+        Assert.Contains("public abstract void VisitFallBack(TestNamespace.MyType element)", code);
+        throw new Exception(code);
     }
     [Fact]
     public void Visitor_interface()
@@ -641,8 +650,15 @@ namespace TestNamespace
 
 
     private static Compilation CreateCompilation(string source)
-        => CSharpCompilation.Create("compilation",
-                new[] { CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest)) },
-                new[] { MetadataReference.CreateFromFile(typeof(Object).GetTypeInfo().Assembly.Location) , MetadataReference.CreateFromFile(typeof(VisitorAttribute).GetTypeInfo().Assembly.Location) },
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        => CSharpCompilation.Create(
+            "TestNamespace",
+            syntaxTrees: [CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest))],
+            references: [
+                .. Basic.Reference.Assemblies.NetStandard20.References.All,
+                // MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
+                // MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location),
+                // MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+                MetadataReference.CreateFromFile(typeof(VisitorAttribute).Assembly.Location),
+            ],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 }

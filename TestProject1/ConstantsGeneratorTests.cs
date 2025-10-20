@@ -53,8 +53,8 @@ public const string test = ""test"";
                 CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest))
             ],
             [
-               MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location, MetadataReferenceProperties.Assembly),
-                MetadataReference.CreateFromFile(typeof(ConstantsAttribute).GetTypeInfo().Assembly.Location, MetadataReferenceProperties.Assembly),
+               MetadataReference.CreateFromFile(typeof(object).Assembly.Location, MetadataReferenceProperties.Assembly),
+                MetadataReference.CreateFromFile(typeof(ConstantsAttribute).Assembly.Location, MetadataReferenceProperties.Assembly),
                 .. o!.ToString()!.Split(";").Select(x => MetadataReference.CreateFromFile(x))
                 //MetadataReference.CreateFromFile(assembly.Location),
             ],

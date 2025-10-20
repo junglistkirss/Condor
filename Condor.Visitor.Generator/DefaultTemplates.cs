@@ -44,6 +44,7 @@
                     return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    break;
                     {{/if}}
                     {{/if}}
                     {{else}}
@@ -91,10 +92,10 @@ namespace {{OutputNamespace}}
     {
         {{#each ImplementationGroup}}
         {{#if AddVisitFallBack}}
-        {{#if Default.IsAbstract}}
+        {{#if ../Default.IsAbstract}}
         public abstract {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{else}}
-        {{#if Default.IsPartial}}
+        {{#if ../Default.IsPartial}}
         public partial {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}});
         {{else}}
         public virtual {{>Response}} {{../VisitMethodName}}FallBack({{{VisitedType.TypeFullName}}} element{{#each ../TypedArgs}}, {{{ParamTypeFullName}}} {{SanitizedParamName}}{{/each}})
@@ -131,6 +132,7 @@ namespace {{OutputNamespace}}
                     return {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
                     {{else}}
                     {{../VisitMethodName}}FallBack(element{{#each ../TypedArgs}}, {{SanitizedParamName}}{{/each}});
+                    break;
                     {{/if}}
                     {{/if}}
                     {{else}}
