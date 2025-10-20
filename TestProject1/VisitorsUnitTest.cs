@@ -110,7 +110,7 @@ namespace TestNamespace
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
     }
 
-    [Fact(Skip = "NamedArgs")]
+    [Fact]
     public void Visitor_auto_interface__redirect()
     {
         // Arrange
@@ -257,7 +257,7 @@ namespace TestNamespace
         Assert.Contains("T Visit(TestNamespace.MyType2 element);", result.ToString());
     }
 
-    [Fact(Skip = "NamedArgs")]
+    [Fact]
     public void Async_Visitor_auto_interface()
     {
         // Arrange
@@ -286,7 +286,7 @@ namespace TestNamespace
         Assert.Contains("ValueTask Visit(TestNamespace.MyType1 element);", result.ToString());
         Assert.Contains("ValueTask Visit(TestNamespace.MyType2 element);", result.ToString());
     }
-    [Fact(Skip = "NamedArgs")]
+    [Fact]
     public void Async_Visitor_auto_interface_generic_in_out()
     {
         // Arrange
@@ -315,7 +315,7 @@ namespace TestNamespace
         Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
         Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
     }
-    [Fact(Skip = "NamedArgs")]
+    [Fact]
     public void Async_Visitor_auto_interface_generic_in()
     {
         // Arrange
@@ -344,7 +344,7 @@ namespace TestNamespace
         Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
         Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
     }
-    [Fact(Skip = "NamedArgs")]
+    [Fact]
     public void Async_Visitor_auto_interface_generic()
     {
         // Arrange
@@ -373,7 +373,8 @@ namespace TestNamespace
         Assert.Contains("ValueTask Visit(TestNamespace.MyType1 element);", result.ToString());
         Assert.Contains("ValueTask Visit(TestNamespace.MyType2 element);", result.ToString());
     }
-    [Fact(Skip = "NamedArgs")]
+
+    [Fact]
     public void Async_Visitor_auto_interface_generic_out()
     {
         // Arrange
