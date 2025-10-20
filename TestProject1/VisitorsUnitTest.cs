@@ -404,7 +404,7 @@ namespace TestNamespace
     }
 
 
-    [Fact/*(Skip = "NamedArgs to support AddVisitFallBack")*/]
+    [Fact]
     public void Visitor_interfaceFallBack()
     {
         // Arrange
@@ -442,7 +442,6 @@ namespace TestNamespace
         Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
         Assert.Contains("public abstract void VisitFallBack(TestNamespace.MyType element)", code);
-        throw new Exception(code);
     }
     [Fact]
     public void Visitor_interface()
