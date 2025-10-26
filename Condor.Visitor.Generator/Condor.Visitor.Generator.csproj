@@ -13,7 +13,7 @@
     <Authors>Christian Bourbier</Authors>
     <Company>Christian Bourbier</Company>
     <PackageDescription>Visitor pattern generator</PackageDescription>
-    <RepositoryUrl>https://github.com/junglistkirss/Condor.Visitor.Generator</RepositoryUrl>
+    <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>

@@ -14,7 +14,7 @@
     <Authors>Christian Bourbier</Authors>
     <Company>Christian Bourbier</Company>
     <PackageDescription>Files pattern generator</PackageDescription>
-    <RepositoryUrl>https://github.com/junglistkirss/Condor.Files.Generator</RepositoryUrl>
+    <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
