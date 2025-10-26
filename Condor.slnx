@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/Tests/">
+    <Project Path="TestProject1/TestProject1.csproj" />
+  </Folder>
+  <Project Path="Condor.Constants.Generator.Abstractions/Condor.Constants.Generator.Abstractions.csproj" />
+  <Project Path="Condor.Constants.Generator/Condor.Constants.Generator.csproj" />
+  <Project Path="Condor.Contracts.Generator.Abstractions/Condor.Contracts.Generator.Abstractions.csproj" />
+  <Project Path="Condor.Contracts.Generator/Condor.Contracts.Generator.csproj" />
+  <Project Path="Condor.Files.Generator.Abstractions/Condor.Files.Generator.Abstractions.csproj" />
+  <Project Path="Condor.Files.Generator/Condor.Files.Generator.csproj" />
+  <Project Path="Condor.Generator.Utils/Condor.Generator.Utils.csproj" />
+  <Project Path="Condor.Templated.Generator.Abstractions/Condor.Templated.Generator.Abstractions.csproj" />
+  <Project Path="Condor.Templated.Generator/Condor.Templated.Generator.csproj" />
+  <Project Path="Condor.Visitor.Generator.Abstractions/Condor.Visitor.Generator.Abstractions.csproj" />
+  <Project Path="Condor.Visitor.Generator/Condor.Visitor.Generator.csproj" />
+  <Project Path="Condor.With.Generator.Abstractions/Condor.With.Generator.Abstractions.csproj" />
+  <Project Path="Condor.With.Generator/Condor.With.Generator.csproj" />
+</Solution>
