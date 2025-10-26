@@ -13,8 +13,8 @@
     <Version>2.0.1</Version>
     <Authors>Christian Bourbier</Authors>
     <Company>Christian Bourbier</Company>
-    <PackageDescription>Contracts pattern generator</PackageDescription>
-    <RepositoryUrl>https://github.com/junglistkirss/Condor.Contracts.Generator</RepositoryUrl>
+    <PackageDescription>Contracts generator</PackageDescription>
+    <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>

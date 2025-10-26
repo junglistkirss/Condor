@@ -11,7 +11,7 @@ namespace Condor.Contracts.Generator
     [Generator]
     public class FindTypesGenerator : IIncrementalGenerator
     {
-        static bool symbolPredicate(INamedTypeSymbol t) => t.IsType && t.SpecialType == SpecialType.None;
+        //static bool symbolPredicate(INamedTypeSymbol t) => t.IsType && t.SpecialType == SpecialType.None;
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
