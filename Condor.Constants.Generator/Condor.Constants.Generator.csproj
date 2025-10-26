@@ -13,8 +13,8 @@
     <Version>1.0.4</Version>
     <Authors>Christian Bourbier</Authors>
     <Company>Christian Bourbier</Company>
-    <PackageDescription>Constants pattern generator</PackageDescription>
-    <RepositoryUrl>https://github.com/junglistkirss/Condor.Constants.Generator</RepositoryUrl>
+    <PackageDescription>Constants based generator</PackageDescription>
+    <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>

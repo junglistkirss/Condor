@@ -13,6 +13,4 @@
   <Project Path="Condor.Templated.Generator/Condor.Templated.Generator.csproj" />
   <Project Path="Condor.Visitor.Generator.Abstractions/Condor.Visitor.Generator.Abstractions.csproj" />
   <Project Path="Condor.Visitor.Generator/Condor.Visitor.Generator.csproj" />
-  <Project Path="Condor.With.Generator.Abstractions/Condor.With.Generator.Abstractions.csproj" />
-  <Project Path="Condor.With.Generator/Condor.With.Generator.csproj" />
 </Solution>
