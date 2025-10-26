@@ -8,7 +8,7 @@
     <Authors>Christian Bourbier</Authors>
     <Company>Christian Bourbier</Company>
     <PackageDescription>Utilities for code generation (Templating and Code Info)</PackageDescription>
-    <RepositoryUrl>https://github.com/junglistkirss/Condor.Generator.Utils</RepositoryUrl>
+    <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
