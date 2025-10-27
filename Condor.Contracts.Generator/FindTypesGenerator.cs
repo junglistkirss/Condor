@@ -23,12 +23,14 @@ public class FindTypesGenerator : IIncrementalGenerator
                 (node, _) => true,
                 (sc, _) => sc.Attributes.Select(x =>
                 {
+                    if (x.AttributeClass is null)
+                        throw new NullReferenceException("AttributeClass is required");
                     return new TypeFinderInfo
                     {
-                        TypeContraint = x.AttributeClass.TypeArguments.Single().Accept(TargetTypeVisitor.Instance),
+                        TypeContraint = x.AttributeClass.TypeArguments.Single().Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol type required"),
                         AssemblyContraint = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.AssemblyContraint), out string s) ? s : null,
                         AssemblyName = sc.TargetSymbol.Name,
-                        Template = x.ConstructorArguments.Single().Value.ToString(),
+                        Template = x.ConstructorArguments.Single().Value?.ToString() ?? throw new NullReferenceException("Template is missing"),
                         IsRecord = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsRecord), out bool r) ? r : null,
                         IsGeneric = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsGeneric), out bool g) ? g : null,
                         IsAbstract = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsAbstract), out bool a) ? a : null,
@@ -66,9 +68,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                         x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName) || x.Accept(BaseTypesVisitor.Instance).Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName))
                         ).ToArray();
 
-        string template = Templates
-            .FirstOrDefault(x => x.Key == Info.Template)
-            .Template ?? throw new InvalidDataException($"Missing template {Info.Template}");
+        string template = Templates.FirstOrDefault(x => x.Key == Info.Template)?.Template ?? throw new InvalidDataException($"Missing template {Info.Template}");
 
         if (Info.GroupByHostAssembly)
         {
@@ -83,7 +83,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                     Map = [.. group],
                 };
                 var result = templateProcessor.Render(template, template_datas);
-                ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
+                ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
             }
         }
         else
@@ -97,7 +97,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                 Map = types,
             };
             var result = templateProcessor.Render(template, template_datas);
-            ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
+            ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
         }
 
     }
