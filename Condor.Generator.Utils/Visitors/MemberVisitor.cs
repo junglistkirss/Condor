@@ -14,8 +14,8 @@ public sealed class MemberVisitor : SymbolVisitor<MemberInfo>
             IsConstant = symbol.HasConstantValue,
             IsNullable = symbol.NullableAnnotation == NullableAnnotation.Annotated,
             MemberName = symbol.Name,
-            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance),
-            Attributes = symbol.Accept(AttributesVisitor.Instance),
+            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"),
+            Attributes = symbol.Accept(AttributesVisitor.Instance) ?? throw new NullReferenceException("Attributes required"),
         };
     }
     public override MemberInfo VisitProperty(IPropertySymbol symbol)
@@ -25,8 +25,8 @@ public sealed class MemberVisitor : SymbolVisitor<MemberInfo>
             IsConstant = false,
             IsNullable = symbol.NullableAnnotation == NullableAnnotation.Annotated,
             MemberName = symbol.Name,
-            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance),
-            Attributes = symbol.Accept(AttributesVisitor.Instance),
+            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"),
+            Attributes = symbol.Accept(AttributesVisitor.Instance) ?? throw new NullReferenceException("Attributes required"),
         };
     }
 }

@@ -34,7 +34,7 @@ public class ConstantsGenerator : IIncrementalGenerator
                 string? template = templates.FirstOrDefault(x => x.Key == template_datas.TemplateName)?.Template;
                 if (!string.IsNullOrEmpty(template))
                 {
-                    string result = templateProcessor.Render(template, template_datas);
+                    string result = templateProcessor.Render(template!, template_datas);
                     ctx.AddSource(sourceName, result);
                 }
             }

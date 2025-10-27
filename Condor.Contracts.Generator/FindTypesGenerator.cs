@@ -34,7 +34,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                         IsRecord = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsRecord), out bool r) ? r : null,
                         IsGeneric = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsGeneric), out bool g) ? g : null,
                         IsAbstract = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsAbstract), out bool a) ? a : null,
-                        GroupByHostAssembly = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.GroupByHostAssembly), out bool b) ? b : false,
+                        GroupByHostAssembly = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.GroupByHostAssembly), out bool b) && b,
                     };
                 }).ToArray()).SelectMany((x, _) => x)
             .Combine(context.GetTypesProvider())
@@ -58,7 +58,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                 .WithTemplates(Templates).Build();
 
         string outputNamespace = Info.AssemblyName;
-        TargetTypeInfo[] types = TypesProvider
+        TargetTypeInfo[] types = [.. TypesProvider
             .Combined(a => a.Name.StartsWith(Info.AssemblyContraint, StringComparison.OrdinalIgnoreCase),
                 x => x.SpecialType == SpecialType.None
                     && (x.IsType || (!Info.IsRecord.HasValue || (x.IsRecord == Info.IsRecord.Value)))
@@ -66,7 +66,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                     && (!Info.IsGeneric.HasValue || (x.IsGenericType == Info.IsGeneric.Value))
                     && (
                         x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName) || x.Accept(BaseTypesVisitor.Instance).Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName))
-                        ).ToArray();
+                        )];
 
         string template = Templates.FirstOrDefault(x => x.Key == Info.Template)?.Template ?? throw new InvalidDataException($"Missing template {Info.Template}");
 

@@ -12,30 +12,6 @@ public sealed class MembersVisitor<T> : SymbolVisitor<MemberInfo[]>
 
     public override MemberInfo[] VisitNamedType(INamedTypeSymbol symbol)
     {
-        return symbol.GetMembers().OfType<T>()
-            .Select(x => x.Accept(MemberVisitor.Instance)).ToArray();
-    }
-}
-
-public static class MapMembers
-{
-    public static MapMembersVisitor<IPropertySymbol, TOut> Properties<TOut>(Func<IPropertySymbol, TOut> map)
-        => new MapMembersVisitor<IPropertySymbol, TOut>(map);
-
-
-}
-public sealed class MapMembersVisitor<T, TOut> : SymbolVisitor<TOut[]>
-   where T : ISymbol
-{
-    private readonly Func<T, TOut> map;
-
-    public MapMembersVisitor(Func<T, TOut> map)
-    {
-        this.map = map;
-    }
-
-    public override TOut[] VisitNamedType(INamedTypeSymbol symbol)
-    {
-        return symbol.GetMembers().OfType<T>().Select(map).ToArray();
+        return [.. symbol.GetMembers().OfType<T>().Select(x => x.Accept(MemberVisitor.Instance) ?? throw new NullReferenceException("TargetType required"))];
     }
 }

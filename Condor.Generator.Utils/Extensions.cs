@@ -31,7 +31,7 @@ public static class Extensions
                         return new KeyedTemplate
                         {
                             Key = Path.GetFileNameWithoutExtension(text.Path),
-                            Template = text.GetText(cancellationToken)?.ToString()
+                            Template = text.GetText(cancellationToken)?.ToString() ?? throw new NullReferenceException("Template is empty")
                         };
                     });
     }
@@ -41,13 +41,13 @@ public static class Extensions
              .Select<Compilation, ReferencedTypeFinder>((cp, cancellationToken) =>
              {
                  cancellationToken.ThrowIfCancellationRequested();
-                 return (Func<IAssemblySymbol, bool> assemblyPredicate, Func<INamedTypeSymbol, bool> symbolPredicate) =>
+                 return (assemblyPredicate, symbolPredicate) =>
                  {
                      return cp.SourceModule.ReferencedAssemblySymbols
                      .Where(assemblyPredicate) // CRACRA ça, trouver un autre moyen pour filrer les assemblys
                      .SelectMany(s =>
                      {
-                         return s.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance));
+                         return s.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"));
                      });
                  };
              })
@@ -57,7 +57,7 @@ public static class Extensions
                  cancellationToken.ThrowIfCancellationRequested();
                  return (symbolPredicate) =>
                  {
-                     return cp.SourceModule.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance));
+                     return cp.SourceModule.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"));
                  };
              }))
              .Select((x, cancellationToken) =>
@@ -67,10 +67,10 @@ public static class Extensions
              });
     }
     public static IEnumerable<TargetTypeInfo> GetTypedArguments(this INamedTypeSymbol data)
-        => data.TypeArguments.Select(x => x.Accept(TargetTypeVisitor.Instance));
+        => data.TypeArguments.Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"));
     public static bool TryGetNamedArgument<T>(this AttributeData data, string name, out T value)
     {
-        value = default;
+        value = default!;
         if (data != null && data.NamedArguments.Length > 0 && data.NamedArguments.Any(x => x.Key == name))
         {
             TypedConstant val = data.NamedArguments.Single(x => x.Key == name).Value;
@@ -78,7 +78,7 @@ public static class Extensions
             {
                 if (val.Kind == TypedConstantKind.Array)
                     throw new InvalidOperationException($"Named argument {name} is an array");
-                value = (T)val.Value;
+                value = (T)val.Value!;
                 return true;
             }
         }
@@ -86,7 +86,7 @@ public static class Extensions
     }
     public static bool TryGetNamedArgumentMany<T>(this AttributeData data, string name, out T[] value)
     {
-        value = default;
+        value = default!;
         if (data != null && data.NamedArguments.Length > 0 && data.NamedArguments.Any(x => x.Key == name))
         {
             TypedConstant val = data.NamedArguments.Single(x => x.Key == name).Value;
@@ -94,7 +94,7 @@ public static class Extensions
             {
                 if (val.Kind != TypedConstantKind.Array)
                     throw new InvalidOperationException($"Named argument {name} is not an array");
-                value = val.Values.Select(x => (T)x.Value).ToArray();
+                value = [.. val.Values.Select(x => (T)x.Value!)];
                 return true;
             }
         }

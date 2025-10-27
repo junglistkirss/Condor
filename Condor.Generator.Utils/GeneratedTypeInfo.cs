@@ -2,7 +2,7 @@
 
 public abstract record GeneratedTypeInfo
 {
-    public string OutputNamespace { get; set; }
-    public string ClassName { get; set; }
+    public string OutputNamespace { get; set; } = default!;
+    public string ClassName { get; set; } = default!;
 
 }

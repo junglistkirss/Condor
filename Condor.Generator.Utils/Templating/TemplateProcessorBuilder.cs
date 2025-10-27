@@ -10,10 +10,10 @@ namespace Condor.Generator.Utils.Templating;
 
 public class TemplateProcessorBuilder
 {
-    private Action<HandlebarsConfiguration> configure = null;
-    private Action<IHandlebars> extend = null;
+    private Action<HandlebarsConfiguration>? configure = null;
+    private Action<IHandlebars>? extend = null;
 
-    private KeyedTemplate[] templates;
+    private KeyedTemplate[] templates = [];
     public TemplateProcessorBuilder WithConfigure(Action<HandlebarsConfiguration> configure)
     {
         this.configure = configure;
@@ -26,7 +26,7 @@ public class TemplateProcessorBuilder
     }
     public TemplateProcessorBuilder WithTemplates(IEnumerable<KeyedTemplate> templates)
     {
-        this.templates = templates.ToArray();
+        this.templates = [.. templates];
         return this;
     }
     public TemplateProcessor Build()
