@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace Condor.Templated.Generator.Abstractions
+namespace Condor.Templated.Generator.Abstractions;
+
+[AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+public class EnhanceAttribute<T>(string key = null) : Attribute
 {
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    public class EnhanceAttribute<T>(string key = null) : Attribute
-    {
-        public string Key { get; } = key;
-    }
+    public string Key { get; } = key;
 }
