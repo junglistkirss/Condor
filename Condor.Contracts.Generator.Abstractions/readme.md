@@ -1,23 +1,22 @@
 # Condor.Contracts.Generator.Abstractions
 
-**FindTypesAttribute<>** require a string template name (without mustache extension), this attribute must be place at assembly level
-Generic type argument can be any type.
+**FindTypesAttribute<>** require a string template name (without `.mustache` extension), this attribute is only allowed at assembly level; The generic type parameter is used to find derived types.
 
-Named arguments available: 
+| Named argument | Description |
+| -------- | ----------- |
+| AssemblyContraint | Regex to filter the containing assembly derived found type |
+| IsRecord | boolean to find only record types |
+| IsGeneric | boolean to find only generic types |
+| IsAbstract | boolean to find only abstract types |
+| GroupByHostAssembly | booelan to instruct generator by containing assembly (for the found types) |
 
-AssemblyContraint : Regex to filter the containing assembly derived found type
-IsRecord : boolean to find only record types
-IsGeneric : boolean to find only generic types
-IsAbstract : boolean to find only abstract types
-GroupByHostAssembly : booelan to instruct generator by containing assembly (for the found types)
-
-```
-csharp
+**Project code**
+```csharp
 [assembly: FindTypes<Message>("TypeProvider", AssemblyContraint = "Sample.Assembly", IsGeneric = false, IsAbstract = false)]
 ```
 
-```
-mustache
+**TypeProvider.mustache**
+```handlebars
 /* auto-generated */
 using Sample.Assembly.Registry;
 
@@ -37,10 +36,8 @@ namespace {{OutputNamespace}}.TypeProviders
 }
 ```
 
-generated.cs
-
-```
-csharp
+**Generated code** : *[TemplateKey]*.*[ArgumentType]*.generated.cs
+```csharp
 /* auto-generated */
 using Sample.Assembly.Registry
 

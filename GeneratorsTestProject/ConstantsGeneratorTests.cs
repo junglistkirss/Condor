@@ -1,44 +1,36 @@
-using Condor.Constants.Generator;
-using Condor.Constants.Generator.Abstractions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
-using System.Reflection;
-using Xunit;
+
+namespace GeneratorsTestProject;
 
 
-namespace Testproject1;
-
-
-public class FilesGeneratorTests
+public class ConstantsGeneratorTests
 {
     [Fact]
     public void Constants_auto_interface_filter()
     {
         // Arrange
         var source = @"
-using Condor.Files.Generator.Abstractions;
+using Condor.Constants.Generator.Abstractions;
 
 namespace TestNamespace
 {
-    [Files(""template"", "".*"")]
-    public class TestConstants {}
+    [Constants(""template"")]
+    public class TestConstants {
+    
+public const string test = ""test"";
+
+}
 }";
 
         var compilation = CreateCompilation(source);
-        var generator = new TemplatedFilesGenerator();
+        var generator = new ConstantsGenerator();
         // Act
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generator)
-            .AddAdditionalTexts([
-                new StringAdditionalText("template.mustache","{{#each Files}}{{./FileName}}{{/each}}"),
-                new StringAdditionalText("icon.svg","SVG")
-            ]);
+            .AddAdditionalTexts([new StringAdditionalText("template.mustache","namespace Test { }")]);
         driver = driver.RunGenerators(compilation);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("template", result.ToString());
-        Assert.Contains("icon", result.ToString());
+        Assert.Contains("namespace Test { }", result.ToString());
 
     }
 
@@ -53,8 +45,8 @@ namespace TestNamespace
                 CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest))
             ],
             [
-               MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location, MetadataReferenceProperties.Assembly),
-                MetadataReference.CreateFromFile(typeof(ConstantsAttribute).GetTypeInfo().Assembly.Location, MetadataReferenceProperties.Assembly),
+               MetadataReference.CreateFromFile(typeof(object).Assembly.Location, MetadataReferenceProperties.Assembly),
+                MetadataReference.CreateFromFile(typeof(ConstantsAttribute).Assembly.Location, MetadataReferenceProperties.Assembly),
                 .. o!.ToString()!.Split(";").Select(x => MetadataReference.CreateFromFile(x))
                 //MetadataReference.CreateFromFile(assembly.Location),
             ],

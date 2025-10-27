@@ -2,9 +2,7 @@
 
 This generator is used to genrate a custom template given as additionnal file
 
-```
-csharp
-
+```csharp
 namespace Test.Grants;
 
 [Constants("AllKeys")]
@@ -19,8 +17,7 @@ public static partial class CrudSample
 
 Additional file : AllKeys.mustache
 
-```
-mustache
+```handlebars
 /* auto-generated */
 
 namespace {{OutputNamespace}}
@@ -38,8 +35,8 @@ namespace {{OutputNamespace}}
 ```
 
 Generated file is *CrudSample.AllKeys.generated.cs*
-```
-csharp
+
+```csharp
 /* auto-generated */
 
 namespace Test.Grants
@@ -58,6 +55,28 @@ namespace Test.Grants
 ```
 
 Partial template keys defined on fields can enpower conditions in templates to make variance on generated output.
+
+## Generator data
+
+The decorated class does not need to be partial, it depends about the template purpose. The decorated class with `ConstantsAttribute` is generated using the follow informations :
+
+**ContantsInfo**
+| Property | Description |
+| -------- | ----------- |
+| OutputNamespace | Same as decorated class |
+| ClassName | Same as decorated class |
+| Map | `MemberInfo` collection containing all the constants fields found in decorated class |
+
+
+**MemberInfo**
+
+| Property | Description |
+| -------- | ----------- |
+| MemberName | Name of the field |
+| IsNullable | boolean inidcating if field type is nullable type |
+| MemberType | type of this field |
+| Attributes | coolection of AttributeInfo decorating the target field |
+| Partials | array of key defined by the |
 
 ## Limitations
 

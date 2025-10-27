@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/Tests/">
-    <Project Path="TestProject1/TestProject1.csproj" />
+    <Project Path="GeneratorsTestProject/GeneratorsTestProject.csproj" />
   </Folder>
   <Project Path="Condor.Constants.Generator.Abstractions/Condor.Constants.Generator.Abstractions.csproj" />
   <Project Path="Condor.Constants.Generator/Condor.Constants.Generator.csproj" />

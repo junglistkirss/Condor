@@ -1,27 +1,11 @@
 # Condor.Constants.Generator.Abstractions
 
-Attibutes for ConstantGenerator
+**ConstantsAttribute** are placed on `Class` Or `Struct`
+This attribute must define a string parameter named template, that correspond to file name with extension  **.mustache* see Condor.Generator.Utils documentation for more informations, string argement named `template` should point to an additional template file (*[template].mustache*).
 
-**ConstantsAttribute** are placed on *Class* Or *Struct*
+**ConstantAttribute** are placed on `Field`
+This attribute is used to define a custom key on constant field, this key can be used to weave the output generation in the template
 
-**ConstantAttribute** are placed on *Field*
 
-Both attributres must defined a string parameter, that correspond to file name with extension *.mustache* see Condor.Generator.Utils documentation.
-
-The decorated class with **ConstantsAttribute** is generated using the follow arguments :
-
-OutputNamespace : same as decorated class
-ClassName : same as decorated class
-Map : an array containing all the constants fields found in decorated class
-
-Each item of that array is structured like : 
-
-Member : details of member
-	Member.MemberName : Name of the field
-	Member.IsNullable : boolean inidcating if field type is nullable type
-	Member.MemberType : type of this field
-	Member.Attributes : coolection of attribute info decorating the target field
-
-Partials : array of key defined by the **ConstantAttribute**
 
 

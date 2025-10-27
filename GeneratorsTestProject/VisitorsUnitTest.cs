@@ -1,14 +1,7 @@
-using Condor.Visitor.Generator;
-using Condor.Visitor.Generator.Abstractions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
-using System.Reflection;
-using Xunit;
 
 
-namespace Testproject1;
-
+namespace GeneratorsTestProject;
 
 public class VisitorGeneratorTests
 {
