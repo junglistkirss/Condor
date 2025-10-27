@@ -17,10 +17,40 @@ jobs:
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.x
+    
     - name: Restore dependencies
       run: dotnet restore ./Condor.slnx
+    
     - name: Build
       run: dotnet build ./Condor.slnx --configuration Release --no-restore
+    
     - name: Test
-      run: dotnet test ./Condor.slnx --no-build --verbosity normal
+      run: dotnet test ./Condor.slnx --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+    
+    - name: Merge Coverage Reports
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.4.17
+      with:
+        reports: ./coverage/**/coverage.cobertura.xml
+        targetdir: ./coveragereport
+        reporttypes: Cobertura
+      
+    - name: Code Coverage Report
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: ./coveragereport/Cobertura.xml
+        badge: true
+        fail_below_min: false
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: true
+        indicators: true
+        output: both
+        thresholds: '${{ vars.MIN_COVERAGE_THRESHOLD }} 80'
+    
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        recreate: true
+        path: code-coverage-results.md
 
