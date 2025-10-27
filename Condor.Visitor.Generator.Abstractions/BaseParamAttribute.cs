@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Condor.Visitor.Generator.Abstractions;
+﻿namespace Condor.Visitor.Generator.Abstractions;
 
 public abstract class BaseParamAttribute<TParamType> : Attribute
 {

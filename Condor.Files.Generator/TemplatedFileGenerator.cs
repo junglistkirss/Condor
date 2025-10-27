@@ -1,14 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
+﻿using Condor.Files.Generator.Abstractions;
 using Condor.Generator.Utils;
-using Condor.Generator.Utils.Visitors;
-using Microsoft.CodeAnalysis.CSharp;
 using Condor.Generator.Utils.Templating;
-using Condor.Files.Generator.Abstractions;
+using Condor.Generator.Utils.Visitors;
+using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
-using System.Runtime.CompilerServices;
-using System;
 
 namespace Condor.Constants.Generator;
 
@@ -75,8 +71,8 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
                    foreach (AttributeData attr in sc.Attributes)
                    {
                        files.Add(new IntermediateInfo(
-                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance), 
-                           attr.ConstructorArguments[0].Value?.ToString(), 
+                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
+                           attr.ConstructorArguments[0].Value?.ToString(),
                            attr.ConstructorArguments[1].Value?.ToString()
                         ));
                    }
@@ -92,7 +88,7 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
     {
         return visitors
             .Combine(additionalFiles.Collect())
-            .Combine(addons.Collect())  
+            .Combine(addons.Collect())
             .Select((x, _) =>
             {
                 ImmutableArray<KeyedTemplate> templates = x.Left.Right;

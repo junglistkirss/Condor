@@ -1,6 +1,4 @@
 ﻿using HandlebarsDotNet;
-using System;
-using System.Text;
 
 namespace Condor.Generator.Utils.Templating;
 

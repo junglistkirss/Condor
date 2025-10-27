@@ -1,7 +1,4 @@
-﻿using Condor.Generator.Utils;
-using Microsoft.CodeAnalysis;
-using System;
-using System.Linq;
+﻿using Microsoft.CodeAnalysis;
 
 namespace Condor.Generator.Utils.Visitors;
 
@@ -12,6 +9,6 @@ public sealed class MembersVisitor<T> : SymbolVisitor<MemberInfo[]>
 
     public override MemberInfo[] VisitNamedType(INamedTypeSymbol symbol)
     {
-        return [.. symbol.GetMembers().OfType<T>().Select(x => x.Accept(MemberVisitor.Instance) ?? throw new NullReferenceException("TargetType required"))];
+        return [.. symbol.GetMembers().OfType<T>().Select(x => x.Accept(MemberVisitor.Instance) ?? throw new NullReferenceException("MemberInfo required"))];
     }
 }

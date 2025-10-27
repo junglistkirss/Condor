@@ -1,9 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Collections.Immutable;
-using Condor.Contracts.Generator.Abstractions;
+﻿using Condor.Contracts.Generator.Abstractions;
 using Condor.Generator.Utils;
 using Condor.Generator.Utils.Templating;
 using Condor.Generator.Utils.Visitors;
+using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 
 namespace Condor.Contracts.Generator;
 

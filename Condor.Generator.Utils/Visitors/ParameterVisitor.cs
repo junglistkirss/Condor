@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System.Linq;
 
 namespace Condor.Generator.Utils.Visitors;
 
@@ -50,7 +49,7 @@ public sealed class TypeArgumentVisitor : SymbolVisitor<TypeArgumentInfo>
         {
             Name = symbol.Name,
             HasConstraint = symbol.HasValueTypeConstraint,
-            Contraints = symbol.HasValueTypeConstraint ? [.. symbol.ConstraintTypes.Select(x => x.Accept(TargetTypeVisitor.Instance) ??  throw new NullReferenceException("TargetType required"))] : [],
+            Contraints = symbol.HasValueTypeConstraint ? [.. symbol.ConstraintTypes.Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"))] : [],
             IsNullable = symbol.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated,
             IsIn = symbol.Variance == VarianceKind.In,
             IsOut = symbol.Variance == VarianceKind.Out,

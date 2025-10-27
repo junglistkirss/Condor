@@ -1,6 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-
-namespace Condor.Generator.Utils;
+﻿namespace Condor.Generator.Utils;
 
 public record KeyedTemplate
 {

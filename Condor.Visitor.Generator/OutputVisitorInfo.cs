@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Condor.Generator.Utils;
+﻿using Condor.Generator.Utils;
 
 namespace Condor.Visitor.Generator;
 

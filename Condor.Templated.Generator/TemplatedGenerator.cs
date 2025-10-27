@@ -1,13 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Condor.Generator.Utils;
+using Condor.Generator.Utils.Templating;
+using Condor.Generator.Utils.Visitors;
+using Condor.Templated.Generator.Abstractions;
+using HandlebarsDotNet;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
-using Condor.Generator.Utils;
-using Condor.Generator.Utils.Visitors;
-using Condor.Generator.Utils.Templating;
-using Condor.Templated.Generator.Abstractions;
-using System.Data;
-using HandlebarsDotNet;
-using System.Collections;
 
 namespace Condor.Templated.Generator;
 

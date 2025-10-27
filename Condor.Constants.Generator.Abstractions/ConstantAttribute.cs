@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Condor.Constants.Generator.Abstractions;
+﻿namespace Condor.Constants.Generator.Abstractions;
 
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true, Inherited = false)]

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Condor.Contracts.Generator.Abstractions;
+﻿namespace Condor.Contracts.Generator.Abstractions;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
 public class FindTypesAttribute<T>(string template) : Attribute

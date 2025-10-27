@@ -1,13 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Condor.Constants.Generator.Abstractions;
+using Condor.Generator.Utils;
+using Condor.Generator.Utils.Templating;
+using Condor.Generator.Utils.Visitors;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
-using Condor.Generator.Utils;
-using Condor.Generator.Utils.Visitors;
-using Microsoft.CodeAnalysis.CSharp;
-using Condor.Generator.Utils.Templating;
-using Condor.Constants.Generator.Abstractions;
-using System.Text.RegularExpressions;
-using System.Runtime.CompilerServices;
 
 namespace Condor.Constants.Generator;
 
@@ -76,7 +73,7 @@ public class ConstantsGenerator : IIncrementalGenerator
                         ));
                    }
                    return consts;
-               }).SelectMany((x,_)=> x);
+               }).SelectMany((x, _) => x);
     }
 
 
@@ -94,7 +91,7 @@ public class ConstantsGenerator : IIncrementalGenerator
                     ConstantType = data.Left.Owner,
                     TemplateName = data.Left.Template,
                     OutputNamespace = data.Left.Owner.ContainingNamespace,
-                    Map = [.. data.Left.Consts.Select(x => new ConstantInfo(x.Member,x.Partials))]
+                    Map = [.. data.Left.Consts.Select(x => new ConstantInfo(x.Member, x.Partials))]
                 });
             });
     }

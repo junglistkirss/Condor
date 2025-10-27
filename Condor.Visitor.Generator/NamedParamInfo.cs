@@ -1,6 +1,4 @@
-﻿using Condor.Generator.Utils;
-
-namespace Condor.Visitor.Generator;
+﻿namespace Condor.Visitor.Generator;
 
 internal record class NamedParamInfo
 {
@@ -10,6 +8,6 @@ internal record class NamedParamInfo
         SanitizedParamName = sanitizedParamName;
     }
 
-    public string ParamTypeFullName { get;  }
+    public string ParamTypeFullName { get; }
     public string SanitizedParamName { get; }
 }

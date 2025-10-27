@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Condor.Visitor.Generator;
 using Condor.Visitor.Generator.Abstractions;
 using Microsoft.CodeAnalysis;
@@ -423,7 +422,7 @@ namespace TestNamespace
         var compilation = CreateCompilation(source);
         var generator = new VisitorGenerator();
         var compilationDiagnostics = compilation.GetDiagnostics();
-            Assert.Empty(compilationDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+        Assert.Empty(compilationDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
 
         // Act
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
