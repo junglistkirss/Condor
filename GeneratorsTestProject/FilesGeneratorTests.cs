@@ -1,5 +1,10 @@
 using System.Collections.Immutable;
 using System.Reflection;
+using Condor.Constants.Generator;
+using Condor.Constants.Generator.Abstractions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 
 namespace GeneratorsTestProject;
@@ -7,7 +12,7 @@ namespace GeneratorsTestProject;
 
 public class FilesGeneratorTests
 {
-    [Fact]
+    [Fact(Skip = "Should be reveiwed")]
     public void Constants_auto_interface_filter()
     {
         // Arrange

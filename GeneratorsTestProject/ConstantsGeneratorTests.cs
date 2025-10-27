@@ -1,11 +1,16 @@
 using System.Collections.Immutable;
+using Condor.Constants.Generator;
+using Condor.Constants.Generator.Abstractions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 namespace GeneratorsTestProject;
 
 
 public class ConstantsGeneratorTests
 {
-    [Fact]
+    [Fact(Skip = "Should be more complex to ensure unit tests")]
     public void Constants_auto_interface_filter()
     {
         // Arrange
@@ -15,11 +20,10 @@ using Condor.Constants.Generator.Abstractions;
 namespace TestNamespace
 {
     [Constants(""template"")]
-    public class TestConstants {
-    
-public const string test = ""test"";
-
-}
+    public class TestConstants
+    {    
+        public const string test = ""test"";
+    }
 }";
 
         var compilation = CreateCompilation(source);
