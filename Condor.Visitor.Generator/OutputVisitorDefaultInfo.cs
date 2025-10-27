@@ -7,6 +7,6 @@
         public bool IsPartial { get; internal set; }
         public bool GenerateDefault { get; internal set; }
         public bool IsVisitAbstract { get; internal set; }
-        public string DefaultTypeName { get; internal set; }
+        public string DefaultTypeName { get; internal set; } = default!;
     }
 }

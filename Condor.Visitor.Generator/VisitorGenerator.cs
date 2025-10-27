@@ -64,11 +64,16 @@ namespace Condor.Visitor.Generator
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
-                       return sc.Attributes.Select(attr => (
-                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                            AcceptParamType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance),
-                            AcceptParamName: attr.TryGetNamedArgument(nameof(AcceptParamAttribute<object>.ParamName), out string n) ? n : null
-                       ));
+                       return sc.Attributes.Select(attr =>
+                       {
+                           if (attr.AttributeClass is null)
+                               throw new NullReferenceException("AttributeClass is null");
+                           return (
+                               Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                               AcceptParamType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol type required"),
+                               AcceptParamName: attr.TryGetNamedArgument(nameof(AcceptParamAttribute<object>.ParamName), out string n) ? n : null
+                           );
+                       });
                    }).SelectMany((x, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -88,7 +93,9 @@ namespace Condor.Visitor.Generator
                    {
                        cancellationToken.ThrowIfCancellationRequested();
                        var attr = sc.Attributes.Single();
-                       return new VisitableInfo(sc.TargetSymbol.Accept(StrongNameVisitor.Instance), attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string name) ? name : DefaultAcceptMethodName);
+                       return new VisitableInfo(
+                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                           attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string name) ? name : DefaultAcceptMethodName);
                    });
         }
 
@@ -104,7 +111,7 @@ namespace Condor.Visitor.Generator
                        var vo = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.VisitOptions), out VisitOptions f) ? f : VisitOptions.AbstractVisit;
                        var o = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.Options), out OptionsDefault od) ? od : OptionsDefault.None;
                        return new GenerateDefaultInfo(
-                            sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
+                            sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
                             GenerateDefault: true,
                             vo == VisitOptions.UseVisitFallBack,
                             o.HasFlag(OptionsDefault.ForcePublic),
@@ -123,11 +130,16 @@ namespace Condor.Visitor.Generator
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
-                       return sc.Attributes.Select(attr => (
-                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                            VisitParamType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance),
-                            VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string n) ? n : null
-                       ));
+                       return sc.Attributes.Select(attr =>
+                       {
+                           if (attr.AttributeClass is null)
+                               throw new NullReferenceException("AttributeClass is required");
+                           return (
+                                Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required"),
+                                VisitParamType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required"),
+                                VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string n) ? n : null
+                            );
+                       });
                    }).SelectMany((x, _) =>
                    {
                        return x.GroupBy(e => e.Correlation).Select(e =>
@@ -148,12 +160,12 @@ namespace Condor.Visitor.Generator
                        cancellationToken.ThrowIfCancellationRequested();
                        var attr = sc.Attributes.Single();
                        return new VisitorInfo(
-                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
+                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
                            ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
                            sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
-                           attr.TryGetNamedArgument(nameof(VisitorAttribute.IsAsync), out bool w) ? w : false,
-                           attr.TryGetNamedArgument(nameof(VisitorAttribute.VisitMethodName), out string name) ? name :DefaultVisitMethodName 
+                           attr.TryGetNamedArgument(nameof(VisitorAttribute.IsAsync), out bool w) && w,
+                           attr.TryGetNamedArgument(nameof(VisitorAttribute.VisitMethodName), out string name) ? name : DefaultVisitMethodName
                         );
                    });
         }
@@ -166,10 +178,15 @@ namespace Condor.Visitor.Generator
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
-                       return sc.Attributes.Select(attr => (
-                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                            ImplementationType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance)
-                       ));
+                       return sc.Attributes.Select(attr =>
+                       {
+                           if (attr.AttributeClass is null)
+                               throw new NullReferenceException("AttributeClass is required");
+                           return (
+                                Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                                ImplementationType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required")
+                            );
+                       });
                    }).SelectMany((x, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
@@ -189,10 +206,12 @@ namespace Condor.Visitor.Generator
                    (sc, cancellationToken) =>
                    {
                        cancellationToken.ThrowIfCancellationRequested();
-                       var attr = sc.Attributes.Single();
+                       AttributeData attr = sc.Attributes.Single();
+                       if (attr.AttributeClass is null)
+                           throw new NullReferenceException("AttributeClass is required");
                        return new OutputInfo(
-                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                           ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance)
+                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                           ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required")
                         );
                    });
         }
@@ -230,16 +249,21 @@ namespace Condor.Visitor.Generator
                         (sc, cancellationToken) =>
                         {
                             cancellationToken.ThrowIfCancellationRequested();
-                            return sc.Attributes.Select(attr => (
-                                 Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                                 VisitedType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance),
-                                 AssemblyPattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPattern), out string ap) ? ap : sc.TargetSymbol.ContainingAssembly.Name,
-                                 TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string tp) ? tp : null,
-                                 Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
-                                 AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) ? a : false,
-                                 AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) ? f : false,
-                                 AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) ? d : false
-                             ));
+                            return sc.Attributes.Select(attr =>
+                            {
+                                if (attr.AttributeClass is null)
+                                    throw new NullReferenceException("AttributeClass is required");
+                                return (
+                                    Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                                    VisitedType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required"),
+                                    AssemblyPattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPattern), out string ap) ? ap : sc.TargetSymbol.ContainingAssembly.Name,
+                                    TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string tp) ? tp : null,
+                                    Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
+                                    AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) && a,
+                                    AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) && f,
+                                    AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) && d
+                                );
+                            });
                         }).Combine(types).SelectMany((x, cancellationToken) =>
                         {
                             cancellationToken.ThrowIfCancellationRequested();
@@ -256,8 +280,8 @@ namespace Condor.Visitor.Generator
                                              {
                                                  bool typePatternMatch = string.IsNullOrWhiteSpace(e.TypePattern)
                                                     || Regex.IsMatch(x.Accept(StrongNameVisitor.Instance), e.TypePattern);
-                                                 bool subTypeMatch = 
-                                                    e.VisitedType.TypeFullName !=  x.Accept(StrongNameVisitor.Instance)
+                                                 bool subTypeMatch =
+                                                    e.VisitedType.TypeFullName != x.Accept(StrongNameVisitor.Instance)
                                                     && x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
                                                         || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName);
                                                  if (typePatternMatch && subTypeMatch)
@@ -313,56 +337,43 @@ namespace Condor.Visitor.Generator
                     AcceptParamInfo AcceptParam = Left.Left.AcceptParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
                     VisitParamInfo VisitParam = Left.VisitParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
                     //string Template = Templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
-                    string returnType = default;
+                    string? returnType = null;
                     bool hasReturnType = false;
                     if (Output != default)
                     {
                         hasReturnType = true;
                         returnType = Output.Output.TypeFullName;
                     }
-                    else
+                    else if (Visitor.Owner.IsGeneric)
                     {
-                        hasReturnType = Visitor.Owner.IsGeneric && (Visitor.Owner.GenericTypes.Any(x => x.IsOut) || Visitor.Owner.GenericTypes.Where(x => x.IsVarianceUnspecified).Count() == 1);
+                        hasReturnType = (Visitor.Owner.GenericTypes.Any(x => x.IsOut) || Visitor.Owner.GenericTypes.Where(x => x.IsVarianceUnspecified).Count() == 1);
                         returnType = Visitor.Owner.GenericTypes.FirstOrDefault(x => x.IsOut)?.Name ?? Visitor.Owner.GenericTypes.FirstOrDefault(x => x.IsVarianceUnspecified)?.Name;
                     }
                     List<NamedParamInfo> typedArgs = [];
                     if (Visitor.Owner.IsGeneric && Visitor.Owner.GenericTypes.Any(x => x.IsIn))
                     {
-                        typedArgs.AddRange(Visitor.Owner.GenericTypes.Where(x => x.IsIn).Select(x => new NamedParamInfo
-                        {
-                            ParamTypeFullName = x.Name,
-                            SanitizedParamName = x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower()
-
-                        }));
+                        typedArgs.AddRange(Visitor.Owner.GenericTypes
+                            .Where(x => x.IsIn)
+                            .Select(x => new NamedParamInfo(x.Name, x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower())));
                     }
                     if (VisitParam.VisitParamTypes != null && VisitParam.VisitParamTypes.Count() > 0)
                         typedArgs.AddRange(VisitParam.VisitParamTypes.Select(x =>
                         {
-                            return new NamedParamInfo
-                            {
-                                ParamTypeFullName = x.VisitParamType.TypeFullName,
-                                SanitizedParamName = x.VisitParamName ?? x.VisitParamType.SanitizeTypeNameAsArg,
-                            };
+                            return new NamedParamInfo(x.VisitParamType.TypeFullName, x.VisitParamName ?? x.VisitParamType.SanitizeTypeNameAsArg);
                         }));
                     List<NamedParamInfo> accept = [];
                     if (Visitor.Owner.IsGeneric && Visitor.Owner.GenericTypes.Any(x => x.IsIn))
                     {
-                        accept.AddRange(Visitor.Owner.GenericTypes.Where(x => x.IsIn).Select(x => new NamedParamInfo
-                        {
-                            ParamTypeFullName = x.Name,
-                            SanitizedParamName = x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower()
-
-                        }));
+                        accept.AddRange(Visitor.Owner.GenericTypes
+                            .Where(x => x.IsIn)
+                            .Select(x => new NamedParamInfo(x.Name, x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower())));
                     }
                     if (AcceptParam.AcceptParamTypes != null && AcceptParam.AcceptParamTypes.Count() > 0)
-                        accept.AddRange(AcceptParam.AcceptParamTypes.Select(x => new NamedParamInfo
-                        {
-                            SanitizedParamName = x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg,
-                            ParamTypeFullName = x.AcceptParamType.TypeFullName,
-                        }));
+                        accept.AddRange(AcceptParam.AcceptParamTypes
+                            .Select(x => new NamedParamInfo(x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg, x.AcceptParamType.TypeFullName)));
                     return (Templates, new OutputVisitorInfo
                     {
-                        VisitMethodName = string.IsNullOrWhiteSpace(Visitor.VisitMethodName)? DefaultVisitMethodName : Visitor.VisitMethodName.Trim(),
+                        VisitMethodName = string.IsNullOrWhiteSpace(Visitor.VisitMethodName) ? DefaultVisitMethodName : Visitor.VisitMethodName.Trim(),
                         AccessibilityModifier = Visitor.AccessibilityModifier,
                         ClassName = Visitor.Owner.TypeName,
                         OutputNamespace = Visitor.Owner.ContainingNamespace,
@@ -374,14 +385,14 @@ namespace Condor.Visitor.Generator
                         ReturnType = returnType,
                         HasArgs = typedArgs.Count > 0,
                         IsAsync = Visitor.IsAsync,
-                        TypedArgs = typedArgs.ToArray(),
-                        ImplementationGroup = Acceptors.Union(AutoAcceptors).Select(x => new ImplGroup
+                        TypedArgs = [.. typedArgs],
+                        ImplementationGroup = [.. Acceptors.Union(AutoAcceptors).Select(x => new ImplGroup
                         {
                             VisitedType = x.VisitedType,
                             AddVisitFallBack = x.AddVisitFallBack,
                             AddVisitRedirect = x.AddVisitRedirect,
-                            ImplementationTypes = x.ImplementationTypes.ToArray(),
-                        }).ToArray(),
+                            ImplementationTypes = [.. x.ImplementationTypes],
+                        })],
                         Default = new OutputVisitorDefaultInfo
                         {
                             DefaultTypeName = (Visitor.Owner.IsGeneric ? Visitor.Owner.TypeName.Substring(0, Visitor.Owner.TypeName.IndexOf("<")) : Visitor.Owner.TypeName).SanitizeBaseOrInterfaceName(),
@@ -394,9 +405,9 @@ namespace Condor.Visitor.Generator
                         Visitable = new OutputVisitableInfo
                         {
                             VisitableTypeName = Visitor.Owner.GenericBaseTypeName.Replace("Visitor", "") + "Visitable",
-                            VisitableParameters = accept.ToArray(),
+                            VisitableParameters = [.. accept],
                             GenerateVisitable = Visitable != default,
-                            AcceptMethodName = string.IsNullOrWhiteSpace(Visitable.AcceptMethodName) ? DefaultAcceptMethodName : Visitable.AcceptMethodName.Trim() ,
+                            AcceptMethodName = string.IsNullOrWhiteSpace(Visitable.AcceptMethodName) ? DefaultAcceptMethodName : Visitable.AcceptMethodName.Trim(),
                         }
                     });
                 });
@@ -408,8 +419,8 @@ namespace Condor.Visitor.Generator
         , bool AddVisitFallBack, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
     { }
     internal record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
-    internal record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string VisitParamName)> VisitParamTypes) { }
+    internal record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string? VisitParamName)> VisitParamTypes) { }
     internal record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }
     internal record struct VisitableInfo(string Correlation, string AcceptMethodName) { }
-    internal record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string AcceptParamName)> AcceptParamTypes) { }
+    internal record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string? AcceptParamName)> AcceptParamTypes) { }
 }
