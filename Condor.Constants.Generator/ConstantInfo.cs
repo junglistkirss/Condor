@@ -1,11 +1,15 @@
 ﻿using Condor.Generator.Utils;
-using System;
 
-namespace Condor.Constants.Generator
+namespace Condor.Constants.Generator;
+
+internal record ConstantInfo
 {
-    internal record ConstantInfo 
+    public ConstantInfo(MemberInfo member, string[] partials)
     {
-        public MemberInfo Member { get; internal set; }
-        public string[] Partials { get; internal set; }
+        Member = member;
+        Partials = partials;
     }
+
+    public MemberInfo Member { get; }
+    public string[] Partials { get; }
 }

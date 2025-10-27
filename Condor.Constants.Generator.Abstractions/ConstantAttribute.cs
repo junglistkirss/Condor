@@ -1,11 +1,8 @@
-﻿using System;
+﻿namespace Condor.Constants.Generator.Abstractions;
 
-namespace Condor.Constants.Generator.Abstractions
+
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
+public class ConstantAttribute(string partialTemplate) : Attribute
 {
-
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
-    public class ConstantAttribute(string partialTemplate) : Attribute
-    {
-        public string PartialTemplate { get; } = partialTemplate;
-    }
+    public string PartialTemplate { get; } = partialTemplate;
 }

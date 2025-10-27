@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Condor.Constants.Generator;
 using Condor.Constants.Generator.Abstractions;
 using Microsoft.CodeAnalysis;
@@ -30,7 +29,7 @@ namespace TestNamespace
         var generator = new ConstantsGenerator();
         // Act
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generator)
-            .AddAdditionalTexts([new StringAdditionalText("template.mustache","namespace Test { }")]);
+            .AddAdditionalTexts([new StringAdditionalText("template.mustache", "namespace Test { }")]);
         driver = driver.RunGenerators(compilation);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);

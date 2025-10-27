@@ -1,22 +1,19 @@
 ﻿using HandlebarsDotNet;
-using System;
-using System.Text;
 
-namespace Condor.Generator.Utils.Templating
+namespace Condor.Generator.Utils.Templating;
+
+
+public class TemplateProcessor
 {
+    private readonly IHandlebars renderer;
 
-    public class TemplateProcessor
+    internal TemplateProcessor(IHandlebars renderer)
     {
-        private readonly IHandlebars renderer;
+        this.renderer = renderer;
+    }
+    public string Render<T>(string template, T datas)
+    {
+        return renderer.Compile(template)(datas);
 
-        internal TemplateProcessor(IHandlebars renderer)
-        {
-            this.renderer = renderer;
-        }
-        public string Render<T>(string template, T datas)
-        {
-            return renderer.Compile(template)(datas);
-
-        }
     }
 }
