@@ -31,7 +31,7 @@ namespace Condor.Constants.Generator
                 {
                     TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
                         .WithTemplates(templates).Build();
-                    string template = templates.FirstOrDefault(x => x.Key == template_datas.TemplateName)?.Template;
+                    string? template = templates.FirstOrDefault(x => x.Key == template_datas.TemplateName)?.Template;
                     if (!string.IsNullOrEmpty(template))
                     {
                         string result = templateProcessor.Render(template, template_datas);
@@ -62,14 +62,16 @@ namespace Condor.Constants.Generator
                                 .Where(x => x.IsConstant)
                                 .Select(x =>
                                 {
-                                    string[] partials = x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString()).ToArray();
+                                    string[] partials = [.. x.Attributes
+                                        .Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName)
+                                        .Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString() ?? throw new NullReferenceException("Missing argument value"))];
                                     return new ConstInfo(x, partials ?? []);
                                 }).ToArray();
 
                            consts.Add(new ConstsOwnerInfo(
-                               sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                               sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
-                               attr.ConstructorArguments[0].Value?.ToString(),
+                               sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                               sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol type required"),
+                               attr.ConstructorArguments[0].Value?.ToString() ?? throw new NullReferenceException("Missing argument value"),
                                members
                             ));
                        }
@@ -92,11 +94,7 @@ namespace Condor.Constants.Generator
                         ConstantType = data.Left.Owner,
                         TemplateName = data.Left.Template,
                         OutputNamespace = data.Left.Owner.ContainingNamespace,
-                        Map = data.Left.Consts.Select(x => new ConstantInfo
-                        {
-                            Member = x.Member,
-                            Partials = x.Partials,
-                        }).ToArray()
+                        Map = [.. data.Left.Consts.Select(x => new ConstantInfo(x.Member,x.Partials))]
                     });
                 });
         }
