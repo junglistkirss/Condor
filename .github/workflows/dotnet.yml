@@ -26,14 +26,14 @@ jobs:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ./Condor.slnx
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ./Condor.slnx --configuration Release --no-restore
     # - name: Test
     #   run: dotnet test --no-build --verbosity normal
 
     - name: NuGet
-      run: dotnet pack --no-build --configuration Release -o .
+      run: dotnet pack ./Condor.slnx --no-build --configuration Release -o .
 
     - name: Push to GitHub package registry
       run: dotnet nuget push *.nupkg --api-key "${{ secrets.NUGET_TOKEN }}" --source https://nuget.pkg.github.com/junglistkirss/index.json --skip-duplicate
