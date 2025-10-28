@@ -28,6 +28,6 @@ jobs:
     - name: Build
       run: dotnet build ./Condor.slnx --configuration Release --no-restore
     - name: NuGet
-      run: dotnet pack ./Condor.slnx --configuration Release -o .
+      run: dotnet pack ./Condor.slnx --configuration Release -o ./nupkgs
     - name: Push to GitHub package registry
-      run: dotnet nuget push *.nupkg --api-key "${{ secrets.NUGET_TOKEN }}" --source https://nuget.pkg.github.com/junglistkirss/index.json --skip-duplicate
+      run: dotnet nuget push ./nupkgs/*.nupkg --api-key "${{ secrets.NUGET_TOKEN }}" --source https://nuget.pkg.github.com/junglistkirss/index.json --skip-duplicate
