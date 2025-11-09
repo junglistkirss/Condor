@@ -1,0 +1,30 @@
+name: Public Nuget Publish
+
+on:
+  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
+  # push:
+  #   branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 8.0.x
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
+
+    - name: Restore dependencies
+      run: dotnet restore ./Condor.slnx
+    - name: Build
+      run: dotnet build ./Condor.slnx --configuration Release --no-restore
+    - name: NuGet
+      run: dotnet pack ./Condor.slnx --configuration Release -o ./nupkgs
+    - name: Push to GitHub package registry
+      run: dotnet nuget push ./nupkgs/*.nupkg --api-key "${{ secrets.PUBLIC_NUGET_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
