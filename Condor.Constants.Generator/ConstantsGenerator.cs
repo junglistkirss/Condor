@@ -3,11 +3,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 using Condor.Generator.Utils;
 using Condor.Generator.Utils.Visitors;
-using Microsoft.CodeAnalysis.CSharp;
 using Condor.Generator.Utils.Templating;
 using Condor.Constants.Generator.Abstractions;
-using System.Text.RegularExpressions;
-using System.Runtime.CompilerServices;
 
 namespace Condor.Constants.Generator
 {
@@ -30,13 +27,11 @@ namespace Condor.Constants.Generator
                 try
                 {
                     TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                        .WithTemplates(templates).Build();
-                    string template = templates.FirstOrDefault(x => x.Key == template_datas.TemplateName)?.Template;
-                    if (!string.IsNullOrEmpty(template))
-                    {
-                        string result = templateProcessor.Render(template, template_datas);
-                        ctx.AddSource(sourceName, result);
-                    }
+                        .WithTemplates(templates)
+                        .Build();
+                    string result = templateProcessor.Render(template_datas.TemplateName, template_datas);
+                    ctx.AddSource(sourceName, result);
+
                 }
                 catch (Exception ex)
                 {
@@ -57,14 +52,16 @@ namespace Condor.Constants.Generator
                        List<ConstsOwnerInfo> consts = [];
                        foreach (AttributeData attr in sc.Attributes)
                        {
-                           var members = sc.TargetSymbol
+                           ConstInfo[] members = [..
+                               sc.TargetSymbol
                                 .Accept(MembersVisitor<IFieldSymbol>.Instance)
                                 .Where(x => x.IsConstant)
                                 .Select(x =>
                                 {
-                                    string[] partials = x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString()).ToArray();
+                                    string[] partials = [.. x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString())];
                                     return new ConstInfo(x, partials ?? []);
-                                }).ToArray();
+                                })
+                           ];
 
                            consts.Add(new ConstsOwnerInfo(
                                sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
@@ -74,7 +71,7 @@ namespace Condor.Constants.Generator
                             ));
                        }
                        return consts;
-                   }).SelectMany((x,_)=> x);
+                   }).SelectMany((x, _) => x);
         }
 
 
@@ -92,11 +89,11 @@ namespace Condor.Constants.Generator
                         ConstantType = data.Left.Owner,
                         TemplateName = data.Left.Template,
                         OutputNamespace = data.Left.Owner.ContainingNamespace,
-                        Map = data.Left.Consts.Select(x => new ConstantInfo
+                        Map = [.. data.Left.Consts.Select(x => new ConstantInfo
                         {
                             Member = x.Member,
                             Partials = x.Partials,
-                        }).ToArray()
+                        })]
                     });
                 });
         }

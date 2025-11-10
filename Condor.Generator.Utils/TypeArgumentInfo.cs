@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
+﻿using RobinMustache.Generators.Accessor;
+using System.Diagnostics;
 
 namespace Condor.Generator.Utils
 {
     [DebuggerDisplay("{Name}")]
-    public record class TypeArgumentInfo
+    [GenerateAccessor]
+    public sealed record class TypeArgumentInfo
     {
         public bool IsVarianceUnspecified { get; internal set; }
         public bool IsIn { get; internal set; }

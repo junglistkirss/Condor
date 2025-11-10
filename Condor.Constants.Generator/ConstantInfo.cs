@@ -1,5 +1,4 @@
 ﻿using Condor.Generator.Utils;
-using System;
 
 namespace Condor.Constants.Generator
 {

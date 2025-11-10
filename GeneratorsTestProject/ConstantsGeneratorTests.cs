@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Condor.Constants.Generator;
 using Condor.Constants.Generator.Abstractions;
 using Microsoft.CodeAnalysis;

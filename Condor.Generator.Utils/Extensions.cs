@@ -1,6 +1,5 @@
 ﻿using Condor.Generator.Utils.Visitors;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,11 +27,10 @@ namespace Condor.Generator.Utils
                         .Select((text, cancellationToken) =>
                         {
                             cancellationToken.ThrowIfCancellationRequested();
-                            return new KeyedTemplate
-                            {
-                                Key = Path.GetFileNameWithoutExtension(text.Path),
-                                Template = text.GetText(cancellationToken)?.ToString()
-                            };
+                            return new KeyedTemplate(
+                                Path.GetFileNameWithoutExtension(text.Path),
+                                text.GetText(cancellationToken)?.ToString()
+                            );
                         });
         }
         public static IncrementalValueProvider<TypesProvider> GetTypesProvider(this IncrementalGeneratorInitializationContext context)
@@ -41,7 +39,7 @@ namespace Condor.Generator.Utils
                  .Select<Compilation, ReferencedTypeFinder>((cp, cancellationToken) =>
                  {
                      cancellationToken.ThrowIfCancellationRequested();
-                     return (Func<IAssemblySymbol, bool> assemblyPredicate, Func<INamedTypeSymbol, bool> symbolPredicate) =>
+                     return (assemblyPredicate, symbolPredicate) =>
                      {
                          return cp.SourceModule.ReferencedAssemblySymbols
                          .Where(assemblyPredicate) // CRACRA ça, trouver un autre moyen pour filrer les assemblys
@@ -94,7 +92,7 @@ namespace Condor.Generator.Utils
                 {
                     if (val.Kind != TypedConstantKind.Array)
                         throw new InvalidOperationException($"Named argument {name} is not an array");
-                    value = val.Values.Select(x => (T)x.Value).ToArray();
+                    value = [.. val.Values.Select(x => (T)x.Value)];
                     return true;
                 }
             }

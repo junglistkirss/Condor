@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
+﻿using RobinMustache.Generators.Accessor;
+using System.Diagnostics;
 
 namespace Condor.Generator.Utils
 {
     [DebuggerDisplay("{AttributeType}")]
-    public record class AttributeInfo
+    [GenerateAccessor]
+    public sealed record class AttributeInfo
     {
         public TargetTypeInfo AttributeType { get; internal set; }
         public ActionInfo Constructor { get; internal set; }

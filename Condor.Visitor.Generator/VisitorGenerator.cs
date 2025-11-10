@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Condor.Generator.Utils.Templating;
 using Condor.Visitor.Generator.Abstractions;
 using System.Text.RegularExpressions;
-using System.Runtime.CompilerServices;
 
 namespace Condor.Visitor.Generator
 {
@@ -21,8 +20,7 @@ namespace Condor.Visitor.Generator
         {
 
             IncrementalValueProvider<TypesProvider> types = context.GetTypesProvider();
-            IncrementalValuesProvider<KeyedTemplate> additionalFiles = context.GetTemplates();
-
+            
             IncrementalValuesProvider<VisitorInfo> visitors = GetVisitorsInfo(context);
             IncrementalValuesProvider<AcceptorInfo> acceptors = GetAcceptorsInfo(context);
             IncrementalValuesProvider<OutputInfo> output = GetOutputInfo(context);
@@ -31,22 +29,17 @@ namespace Condor.Visitor.Generator
             IncrementalValuesProvider<GenerateDefaultInfo> @default = GetGenerateDefaultInfo(context);
             IncrementalValuesProvider<VisitableInfo> visitable = GetVisitableInfo(context);
             IncrementalValuesProvider<AcceptParamInfo> acceptParams = GetAcceptParamInfo(context);
-            IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, OutputVisitorInfo)> combine = CombineData(visitors, acceptors, autoAcceptor, output, @default, visitable, acceptParams, visitParams, additionalFiles);
+            IncrementalValuesProvider<OutputVisitorInfo> combine = CombineData(visitors, acceptors, autoAcceptor, output, @default, visitable, acceptParams, visitParams);
 
             context.RegisterSourceOutput(combine, (ctx, data) =>
             {
-                ImmutableArray<KeyedTemplate> templates = data.Item1;
-                OutputVisitorInfo template_datas = data.Item2;
-
-                string sourceName = string.Join(".", template_datas.ClassName.SanitizeToHintName(), VisitorTemplateName, "generated");
+                string sourceName = string.Join(".", data.ClassName.SanitizeToHintName(), VisitorTemplateName, "generated");
                 try
                 {
                     TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                        .WithTemplates(templates).Build();
+                        .WithTemplates([new KeyedTemplate(DefaultTemplates.DefaultVisitorTemplateKey, DefaultTemplates.VisitorTemplate)]).Build();
 
-                    string template = templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
-
-                    var result = templateProcessor.Render(template, template_datas);//, new RendererSettings())
+                    string result = templateProcessor.Render(DefaultTemplates.DefaultVisitorTemplateKey, data);
                     ctx.AddSource(sourceName, result);
                 }
                 catch (Exception ex)
@@ -152,7 +145,7 @@ namespace Condor.Visitor.Generator
                            sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
                            ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
                            sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
-                           attr.TryGetNamedArgument(nameof(VisitorAttribute.IsAsync), out bool w) ? w : false,
+                           attr.TryGetNamedArgument(nameof(VisitorAttribute.IsAsync), out bool w) && w,
                            attr.TryGetNamedArgument(nameof(VisitorAttribute.VisitMethodName), out string name) ? name :DefaultVisitMethodName 
                         );
                    });
@@ -236,9 +229,9 @@ namespace Condor.Visitor.Generator
                                  AssemblyPattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPattern), out string ap) ? ap : sc.TargetSymbol.ContainingAssembly.Name,
                                  TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string tp) ? tp : null,
                                  Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
-                                 AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) ? a : false,
-                                 AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) ? f : false,
-                                 AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) ? d : false
+                                 AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) && a,
+                                 AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) && f,
+                                 AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) && d
                              ));
                         }).Combine(types).SelectMany((x, cancellationToken) =>
                         {
@@ -280,7 +273,7 @@ namespace Condor.Visitor.Generator
                         });
         }
 
-        private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, OutputVisitorInfo)> CombineData(
+        private static IncrementalValuesProvider<OutputVisitorInfo> CombineData(
                 IncrementalValuesProvider<VisitorInfo> visitors,
                 IncrementalValuesProvider<AcceptorInfo> acceptors,
                 IncrementalValuesProvider<AcceptorInfo> autoAcceptor,
@@ -288,8 +281,7 @@ namespace Condor.Visitor.Generator
                 IncrementalValuesProvider<GenerateDefaultInfo> defaultGen,
                 IncrementalValuesProvider<VisitableInfo> visitable,
                 IncrementalValuesProvider<AcceptParamInfo> acceptParams,
-                IncrementalValuesProvider<VisitParamInfo> visitParams,
-                IncrementalValuesProvider<KeyedTemplate> additionalFiles)
+                IncrementalValuesProvider<VisitParamInfo> visitParams)
         {
             return visitors
                 .Combine(output.Collect())
@@ -299,19 +291,18 @@ namespace Condor.Visitor.Generator
                 .Combine(autoAcceptor.Collect())
                 .Combine(acceptParams.Collect())
                 .Combine(visitParams.Collect())
-                .Combine(additionalFiles.Collect())
                 .Select((data, _) =>
                 {
-                    ((((((((VisitorInfo Visitor, ImmutableArray<OutputInfo> Output) Left, ImmutableArray<GenerateDefaultInfo> GenerateDefault) Left, ImmutableArray<VisitableInfo> Visitable) Left, ImmutableArray<AcceptorInfo> Acceptors) Left, ImmutableArray<AcceptorInfo> AutoAcceptors) Left, ImmutableArray<AcceptParamInfo> AcceptParam) Left, ImmutableArray<VisitParamInfo> VisitParam) Left, ImmutableArray<KeyedTemplate> Templates) = data;
+                    (((((((VisitorInfo Visitor, ImmutableArray<OutputInfo> Output) Left, ImmutableArray<GenerateDefaultInfo> GenerateDefault) Left, ImmutableArray<VisitableInfo> Visitable) Left, ImmutableArray<AcceptorInfo> Acceptors) Left, ImmutableArray<AcceptorInfo> AutoAcceptors) Left, ImmutableArray<AcceptParamInfo> AcceptParam) Left, ImmutableArray<VisitParamInfo> VisitParams)  = data;
 
-                    VisitorInfo Visitor = Left.Left.Left.Left.Left.Left.Left.Visitor;
-                    OutputInfo Output = Left.Left.Left.Left.Left.Left.Left.Output.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                    GenerateDefaultInfo GenerateDefault = Left.Left.Left.Left.Left.Left.GenerateDefault.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                    VisitableInfo Visitable = Left.Left.Left.Left.Left.Visitable.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                    IEnumerable<AcceptorInfo> Acceptors = Left.Left.Left.Left.Acceptors.Where(x => x.Correlation == Visitor.Correlation);
-                    IEnumerable<AcceptorInfo> AutoAcceptors = Left.Left.Left.AutoAcceptors.Where(x => x.Correlation == Visitor.Correlation);
-                    AcceptParamInfo AcceptParam = Left.Left.AcceptParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                    VisitParamInfo VisitParam = Left.VisitParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                    VisitorInfo Visitor = Left.Left.Left.Left.Left.Left.Visitor;
+                    OutputInfo Output = Left.Left.Left.Left.Left.Left.Output.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                    GenerateDefaultInfo GenerateDefault = Left.Left.Left.Left.Left.GenerateDefault.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                    VisitableInfo Visitable = Left.Left.Left.Left.Visitable.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                    IEnumerable<AcceptorInfo> Acceptors = Left.Left.Left.Acceptors.Where(x => x.Correlation == Visitor.Correlation);
+                    IEnumerable<AcceptorInfo> AutoAcceptors = Left.Left.AutoAcceptors.Where(x => x.Correlation == Visitor.Correlation);
+                    AcceptParamInfo AcceptParam = Left.AcceptParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                    VisitParamInfo VisitParam = VisitParams.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
                     //string Template = Templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
                     string returnType = default;
                     bool hasReturnType = false;
@@ -360,7 +351,7 @@ namespace Condor.Visitor.Generator
                             SanitizedParamName = x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg,
                             ParamTypeFullName = x.AcceptParamType.TypeFullName,
                         }));
-                    return (Templates, new OutputVisitorInfo
+                    return new OutputVisitorInfo
                     {
                         VisitMethodName = string.IsNullOrWhiteSpace(Visitor.VisitMethodName)? DefaultVisitMethodName : Visitor.VisitMethodName.Trim(),
                         AccessibilityModifier = Visitor.AccessibilityModifier,
@@ -374,14 +365,14 @@ namespace Condor.Visitor.Generator
                         ReturnType = returnType,
                         HasArgs = typedArgs.Count > 0,
                         IsAsync = Visitor.IsAsync,
-                        TypedArgs = typedArgs.ToArray(),
-                        ImplementationGroup = Acceptors.Union(AutoAcceptors).Select(x => new ImplGroup
+                        TypedArgs = [.. typedArgs],
+                        ImplementationGroup = [.. Acceptors.Union(AutoAcceptors).Select(x => new ImplGroup
                         {
                             VisitedType = x.VisitedType,
                             AddVisitFallBack = x.AddVisitFallBack,
                             AddVisitRedirect = x.AddVisitRedirect,
-                            ImplementationTypes = x.ImplementationTypes.ToArray(),
-                        }).ToArray(),
+                            ImplementationTypes = [.. x.ImplementationTypes],
+                        })],
                         Default = new OutputVisitorDefaultInfo
                         {
                             DefaultTypeName = (Visitor.Owner.IsGeneric ? Visitor.Owner.TypeName.Substring(0, Visitor.Owner.TypeName.IndexOf("<")) : Visitor.Owner.TypeName).SanitizeBaseOrInterfaceName(),
@@ -394,11 +385,11 @@ namespace Condor.Visitor.Generator
                         Visitable = new OutputVisitableInfo
                         {
                             VisitableTypeName = Visitor.Owner.GenericBaseTypeName.Replace("Visitor", "") + "Visitable",
-                            VisitableParameters = accept.ToArray(),
+                            VisitableParameters = [.. accept],
                             GenerateVisitable = Visitable != default,
                             AcceptMethodName = string.IsNullOrWhiteSpace(Visitable.AcceptMethodName) ? DefaultAcceptMethodName : Visitable.AcceptMethodName.Trim() ,
                         }
-                    });
+                    };
                 });
         }
     }

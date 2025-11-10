@@ -9,8 +9,6 @@
   <Project Path="Condor.Files.Generator.Abstractions/Condor.Files.Generator.Abstractions.csproj" />
   <Project Path="Condor.Files.Generator/Condor.Files.Generator.csproj" />
   <Project Path="Condor.Generator.Utils/Condor.Generator.Utils.csproj" />
-  <Project Path="Condor.Templated.Generator.Abstractions/Condor.Templated.Generator.Abstractions.csproj" />
-  <Project Path="Condor.Templated.Generator/Condor.Templated.Generator.csproj" />
   <Project Path="Condor.Visitor.Generator.Abstractions/Condor.Visitor.Generator.Abstractions.csproj" />
   <Project Path="Condor.Visitor.Generator/Condor.Visitor.Generator.csproj" />
 </Solution>

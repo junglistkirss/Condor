@@ -28,11 +28,11 @@ namespace Condor.Contracts.Generator
                             TypeContraint = x.AttributeClass.TypeArguments.Single().Accept(TargetTypeVisitor.Instance),
                             AssemblyContraint = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.AssemblyContraint), out string s) ? s : null,
                             AssemblyName = sc.TargetSymbol.Name,
-                            Template = x.ConstructorArguments.Single().Value.ToString(),
+                            TemplateKey = x.ConstructorArguments.Single().Value.ToString(),
                             IsRecord = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsRecord), out bool r) ? r : null,
                             IsGeneric = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsGeneric), out bool g) ? g : null,
                             IsAbstract = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsAbstract), out bool a) ? a : null,
-                            GroupByHostAssembly = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.GroupByHostAssembly), out bool b) ? b : false,
+                            GroupByHostAssembly = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.GroupByHostAssembly), out bool b) && b,
                         };
                     }).ToArray()).SelectMany((x, _) => x)
                 .Combine(context.GetTypesProvider())
@@ -66,10 +66,6 @@ namespace Condor.Contracts.Generator
                             x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName) || x.Accept(BaseTypesVisitor.Instance).Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName))
                             ).ToArray();
 
-            string template = Templates
-                .FirstOrDefault(x => x.Key == Info.Template)
-                .Template ?? throw new InvalidDataException($"Missing template {Info.Template}");
-
             if (Info.GroupByHostAssembly)
             {
                 foreach (var group in types.GroupBy(x => x.ContainingAssembly))
@@ -82,8 +78,8 @@ namespace Condor.Contracts.Generator
                         BaseType = Info.TypeContraint,
                         Map = [.. group],
                     };
-                    var result = templateProcessor.Render(template, template_datas);
-                    ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
+                    var result = templateProcessor.Render(Info.TemplateKey, template_datas);
+                    ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
                 }
             }
             else
@@ -96,8 +92,8 @@ namespace Condor.Contracts.Generator
                     BaseType = Info.TypeContraint,
                     Map = types,
                 };
-                var result = templateProcessor.Render(template, template_datas);
-                ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
+                var result = templateProcessor.Render(Info.TemplateKey, template_datas);
+                ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
             }
 
         }

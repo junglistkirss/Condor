@@ -1,5 +1,8 @@
-﻿namespace Condor.Visitor.Generator
+﻿using RobinMustache.Generators.Accessor;
+
+namespace Condor.Visitor.Generator
 {
+    [GenerateAccessor]
     internal record class OutputVisitorDefaultInfo
     {
         public bool ForcePublic { get; internal set; }

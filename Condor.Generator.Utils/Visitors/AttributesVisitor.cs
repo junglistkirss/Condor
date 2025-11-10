@@ -1,5 +1,4 @@
-﻿using Condor.Generator.Utils;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -19,20 +18,20 @@ namespace Condor.Generator.Utils.Visitors
                 {
                     AttributeType = datas[i].AttributeClass.Accept(TargetTypeVisitor.Instance),
                     Constructor = datas[i].AttributeConstructor?.Accept(ActionVisitor.Instance),
-                    ConstructorArguments = datas[i].ConstructorArguments.Select(x => new ArgumentInfo
+                    ConstructorArguments = [.. datas[i].ConstructorArguments.Select(x => new ArgumentInfo
                     {
                         ArgumentName = null,
                         ArgumentValue = x.Kind == TypedConstantKind.Array ? x.Values : x.Value,
                         IsNull = x.IsNull,
                         ArgumentType = x.Type?.Accept(TargetTypeVisitor.Instance),
-                    }).ToArray(),
-                    NamedArguments = datas[i].NamedArguments.Select(x => new ArgumentInfo
+                    })],
+                    NamedArguments = [.. datas[i].NamedArguments.Select(x => new ArgumentInfo
                     {
                         ArgumentName = x.Key,
                         ArgumentValue = x.Value,
                         IsNull = false,
                         ArgumentType = null,
-                    }).ToArray(),
+                    })],
                 });
             }
 

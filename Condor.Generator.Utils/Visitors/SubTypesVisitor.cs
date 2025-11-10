@@ -9,7 +9,7 @@ namespace Condor.Generator.Utils.Visitors
         public readonly static SubTypesVisitor Instance = new();
 
         public override INamedTypeSymbol[] DefaultVisit(ISymbol symbol) => [];
-        public override INamedTypeSymbol[] VisitNamespace(INamespaceSymbol symbol) => symbol.GetMembers().Where(x => x.IsNamespace || x.IsType).SelectMany(x => x.Accept(Instance)).ToArray();
+        public override INamedTypeSymbol[] VisitNamespace(INamespaceSymbol symbol) => [.. symbol.GetMembers().Where(x => x.IsNamespace || x.IsType).SelectMany(x => x.Accept(Instance))];
         public override INamedTypeSymbol[] VisitNamedType(INamedTypeSymbol symbol)
         {
             return [symbol/*, .. symbol.GetMembers().SelectMany(x => x.Accept(Instance)).ToArray()*/];

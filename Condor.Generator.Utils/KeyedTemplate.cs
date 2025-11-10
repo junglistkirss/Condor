@@ -1,11 +1,15 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-
-namespace Condor.Generator.Utils
+﻿namespace Condor.Generator.Utils
 {
     public record KeyedTemplate
     {
-        public string Key { get; set; }
-        public string Template { get; set; }
+        public KeyedTemplate(string key, string template)
+        {
+            Key = key;
+            Template = template;
+        }
+
+        public string Key { get; }
+        public string Template { get; }
 
     }
 }

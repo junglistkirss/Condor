@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
+﻿using RobinMustache.Generators.Accessor;
+using System.Diagnostics;
 
 namespace Condor.Generator.Utils
 {
     [DebuggerDisplay("{Name}")]
-    public record class ParameterInfo
+    [GenerateAccessor]
+    public sealed record class ParameterInfo
     {
         public string ParameterName { get; internal set; }
         public object DefaultExpression { get; internal set; }

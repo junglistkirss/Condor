@@ -1,16 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 using Condor.Generator.Utils;
 using Condor.Generator.Utils.Visitors;
-using Microsoft.CodeAnalysis.CSharp;
 using Condor.Generator.Utils.Templating;
 using Condor.Files.Generator.Abstractions;
 using System.Text.RegularExpressions;
-using System.Runtime.CompilerServices;
-using System;
+using Condor.Constants.Generator;
 
-namespace Condor.Constants.Generator
+namespace Condor.Files.Generator
 {
     [Generator]
     public class TemplatedFilesGenerator : IIncrementalGenerator
@@ -33,12 +30,8 @@ namespace Condor.Constants.Generator
                 {
                     TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
                         .WithTemplates(templates).Build();
-                    string template = templates.FirstOrDefault(x => x.Key == template_datas.TemplateName)?.Template;
-                    if (!string.IsNullOrEmpty(template))
-                    {
-                        string result = templateProcessor.Render(template, template_datas);
-                        ctx.AddSource(sourceName, result);
-                    }
+                    string result = templateProcessor.Render(template_datas.TemplateName, template_datas);
+                    ctx.AddSource(sourceName, result);
                 }
                 catch (Exception ex)
                 {
@@ -75,8 +68,8 @@ namespace Condor.Constants.Generator
                        foreach (AttributeData attr in sc.Attributes)
                        {
                            files.Add(new IntermediateInfo(
-                               sc.TargetSymbol.Accept(TargetTypeVisitor.Instance), 
-                               attr.ConstructorArguments[0].Value?.ToString(), 
+                               sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
+                               attr.ConstructorArguments[0].Value?.ToString(),
                                attr.ConstructorArguments[1].Value?.ToString()
                             ));
                        }
@@ -92,7 +85,7 @@ namespace Condor.Constants.Generator
         {
             return visitors
                 .Combine(additionalFiles.Collect())
-                .Combine(addons.Collect())  
+                .Combine(addons.Collect())
                 .Select((x, _) =>
                 {
                     ImmutableArray<KeyedTemplate> templates = x.Left.Right;
@@ -104,7 +97,7 @@ namespace Condor.Constants.Generator
                         OutputNamespace = intermediate.Owner.ContainingNamespace,
                         TemplateName = intermediate.TemplateName,
                         Type = intermediate.Owner,
-                        Files = addons.Where(x => Regex.IsMatch(x.Path, intermediate.Pattern)).Select(x => x.File).ToArray(),
+                        Files = [.. addons.Where(x => Regex.IsMatch(x.Path, intermediate.Pattern)).Select(x => x.File)],
                     });
                 });
         }

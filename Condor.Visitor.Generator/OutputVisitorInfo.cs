@@ -1,9 +1,10 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Condor.Generator.Utils;
+﻿using Condor.Generator.Utils;
+using RobinMustache.Generators.Accessor;
 
 namespace Condor.Visitor.Generator
 {
 
+    [GenerateAccessor]
     internal record class ImplGroup
     {
 
@@ -13,6 +14,7 @@ namespace Condor.Visitor.Generator
         public TargetTypeInfo[] ImplementationTypes { get; internal set; }
     }
 
+    [GenerateAccessor]
     internal record class OutputVisitorInfo : GeneratedTypeInfo
     {
         public string VisitMethodName { get; internal set; }

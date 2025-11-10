@@ -1,5 +1,4 @@
-﻿using Condor.Generator.Utils;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace Condor.Generator.Utils.Visitors
 {

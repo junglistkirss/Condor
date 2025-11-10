@@ -17,8 +17,8 @@ namespace Condor.Generator.Utils.Visitors
                 Definition = symbol.Accept(FriendlyDefinitionVisitor.Instance),
                 ReturnType = symbol.ReturnType.Accept(TargetTypeVisitor.Instance),
                 IsVoid = symbol.ReturnType.SpecialType == SpecialType.System_Void,
-                TypeArguments = symbol.TypeArguments.Select(x => x.Accept(TargetTypeVisitor.Instance)).ToArray(),
-                Parameters = symbol.Parameters.Select(x => x.Accept(ParameterVisitor.Instance)).ToArray(),
+                TypeArguments = [.. symbol.TypeArguments.Select(x => x.Accept(TargetTypeVisitor.Instance))],
+                Parameters = [.. symbol.Parameters.Select(x => x.Accept(ParameterVisitor.Instance))],
                 Attributes = symbol.Accept(AttributesVisitor.Instance)
             };
         }

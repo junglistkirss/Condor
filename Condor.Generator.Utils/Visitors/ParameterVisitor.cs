@@ -50,7 +50,7 @@ namespace Condor.Generator.Utils.Visitors
             {
                 Name = symbol.Name,
                 HasConstraint = symbol.HasValueTypeConstraint,
-                Contraints = symbol.HasValueTypeConstraint ? symbol.ConstraintTypes.Select(x => x.Accept(TargetTypeVisitor.Instance)).ToArray() : [],
+                Contraints = symbol.HasValueTypeConstraint ? [.. symbol.ConstraintTypes.Select(x => x.Accept(TargetTypeVisitor.Instance))] : [],
                 IsNullable = symbol.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated,
                 IsIn = symbol.Variance == VarianceKind.In,
                 IsOut = symbol.Variance == VarianceKind.Out,

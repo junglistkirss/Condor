@@ -1,5 +1,4 @@
-﻿using Condor.Generator.Utils;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Linq;
 
@@ -12,8 +11,7 @@ namespace Condor.Generator.Utils.Visitors
 
         public override MemberInfo[] VisitNamedType(INamedTypeSymbol symbol)
         {
-            return symbol.GetMembers().OfType<T>()
-                .Select(x => x.Accept(MemberVisitor.Instance)).ToArray();
+            return [.. symbol.GetMembers().OfType<T>().Select(x => x.Accept(MemberVisitor.Instance))];
         }
     }
 
@@ -36,7 +34,7 @@ namespace Condor.Generator.Utils.Visitors
 
         public override TOut[] VisitNamedType(INamedTypeSymbol symbol)
         {
-            return symbol.GetMembers().OfType<T>().Select(map).ToArray();
+            return [.. symbol.GetMembers().OfType<T>().Select(map)];
         }
     }
 }

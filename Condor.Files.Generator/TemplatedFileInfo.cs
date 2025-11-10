@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Condor.Constants.Generator
+﻿namespace Condor.Constants.Generator
 {
     internal record TemplatedFileInfo
     {

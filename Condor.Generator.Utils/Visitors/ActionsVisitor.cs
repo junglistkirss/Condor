@@ -1,5 +1,4 @@
-﻿using Condor.Generator.Utils;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using System.Linq;
 
 namespace Condor.Generator.Utils.Visitors
@@ -30,8 +29,7 @@ namespace Condor.Generator.Utils.Visitors
 
         public override ActionInfo[] VisitNamedType(INamedTypeSymbol symbol)
         {
-            return symbol.GetMembers().OfType<IMethodSymbol>()
-                .Select(x => x.Accept(ActionVisitor.Instance)).ToArray();
+            return [.. symbol.GetMembers().OfType<IMethodSymbol>().Select(x => x.Accept(ActionVisitor.Instance))];
         }
     }
 }
