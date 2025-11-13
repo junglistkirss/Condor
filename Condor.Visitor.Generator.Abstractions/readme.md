@@ -24,7 +24,7 @@
 | Accept | Flag enum to specify the type Kind: None, Class, Interface, Struct, Record, Generic, Abstract, Concrete, Sealed |
 | AcceptRequireAll | The discovered type must match all the constraint decribed by the Accept parameter |
 | AddVisitRedirect | Voolean to instruct generator to create a visit redirect that receive base element type (ref. type argument's attribute). The body method use a switch statement to redirect to matche type visit method |
-| AddVisitFallBack | boolean to instruct the generator to create a VisitFallback method use in VisitRedirect method when element type does not match |
+| AddVisitFallback | boolean to instruct the generator to create a VisitFallback method use in VisitRedirect method when element type does not match |
 
 **OutputAttribute<>** This attribute should be placed on the same Node decorating with the `VisitorAttribute` class. This instruct the generator to define output  type on all Visit method of the generator
 

@@ -177,7 +177,7 @@ public class VisitorGenerator : IIncrementalGenerator
                    cancellationToken.ThrowIfCancellationRequested();
                    return x.GroupBy(e => new { e.Correlation, e.ImplementationType }).Select(e =>
                    {
-                       return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallBack: false, AddVisitRedirect: false, ImplementationTypes: e.Select(i => i.ImplementationType));
+                       return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallback: false, AddVisitRedirect: false, ImplementationTypes: e.Select(i => i.ImplementationType));
                    });
                });
     }
@@ -239,7 +239,7 @@ public class VisitorGenerator : IIncrementalGenerator
                              TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string tp) ? tp : null,
                              Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
                              AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) && a,
-                             AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallback), out bool f) && f,
+                             AddVisitFallback: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallback), out bool f) && f,
                              AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) && d
                          ));
                     }).Combine(types).SelectMany((x, cancellationToken) =>
@@ -276,7 +276,7 @@ public class VisitorGenerator : IIncrementalGenerator
                                              return false;
                                          });
 
-                                     return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallBack, e.AddVisitRedirect, ImplementationTypes);
+                                     return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallback, e.AddVisitRedirect, ImplementationTypes);
                                  });
                              });
                     });
@@ -378,7 +378,7 @@ public class VisitorGenerator : IIncrementalGenerator
                     ImplementationGroup = [.. Acceptors.Union(AutoAcceptors).Select(x => new ImplGroup
                     {
                         VisitedType = x.VisitedType,
-                        AddVisitFallBack = x.AddVisitFallBack,
+                        AddVisitFallback = x.AddVisitFallback,
                         AddVisitRedirect = x.AddVisitRedirect,
                         ImplementationTypes = [.. x.ImplementationTypes],
                     })],
@@ -404,7 +404,7 @@ public class VisitorGenerator : IIncrementalGenerator
 
     private record struct VisitorInfo(string Correlation, TargetTypeInfo Owner, string Keyword, string AccessibilityModifier, bool IsAsync, string VisitMethodName) { }
     private record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
-        , bool AddVisitFallBack, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
+        , bool AddVisitFallback, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
     { }
     private record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
     private record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string VisitParamName)> VisitParamTypes) { }

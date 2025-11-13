@@ -12,11 +12,32 @@ internal static class DefaultTemplates
 {{<ResponseNested}}
 {{#IsAsync}}{{#HasReturnType}}ValueTask<{{&ReturnType}}>{{/HasReturnType}}{{^HasReturnType}}ValueTask{{/HasReturnType}}{{/IsAsync}}{{^IsAsync}}{{#HasReturnType}}{{&ReturnType}}{{/HasReturnType}}{{^HasReturnType}}void{{/HasReturnType}}{{/IsAsync}}
 {{/ResponseNested}}
-{{<VisitOptionsClass}}
-    {{#ImplementationGroup}}
+namespace {{&OutputNamespace}}
+{
+    {{#IsInterface}}
+    {{&AccessibilityModifier}} partial interface {{&OriginalTypeDefinition}}
+    {
+        {{#ImplementationGroup}}
         {{#AddVisitFallback}}
-        public partial {{>Response}} {{&VisitMethodName}}FallBack({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
+        {{>Response}} {{&VisitMethodName}}Fallback({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
         {{/AddVisitFallback}}
+        {{#AddVisitRedirect}}
+        {{>Response}} {{&VisitMethodName}}Redirect({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
+        {{/AddVisitRedirect}}
+        {{#ImplementationTypes}}
+        {{>ResponseNested}} {{&VisitMethodName}}({{&TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}}{{#Args}}, {{&.}}{{/Args}});
+        {{/ImplementationTypes}}
+        {{/ImplementationGroup}}
+    }
+    {{/IsInterface}}
+    {{^IsInterface}}
+    {{&AccessibilityModifier}} partial class {{&OriginalTypeDefinition}}
+    {
+        {{#ImplementationGroup}}
+        {{#AddVisitFallback}}
+        public partial {{>Response}} {{&VisitMethodName}}Fallback({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
+        {{/AddVisitFallback}}
+
         {{#AddVisitRedirect}}
         public virtual {{>Response}} {{&VisitMethodName}}Redirect({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}})
         {
@@ -26,10 +47,12 @@ internal static class DefaultTemplates
                 case {{&TypeFullName}} x:
                     {{#HasReturnType}} 
                     return {{&VisitMethodName}}(x{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/HasReturnType}}{{^HasReturnType}}
+                    {{/HasReturnType}}
+                    {{^HasReturnType}}
                     {{#IsAsync}}
                     return {{&VisitMethodName}}(x{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/IsAsync}}{{^IsAsync}}
+                    {{/IsAsync}}
+                    {{^IsAsync}}
                     {{&VisitMethodName}}(x{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
                     break;
                     {{/IsAsync}}
@@ -38,63 +61,52 @@ internal static class DefaultTemplates
                 default:
                     {{#AddVisitFallback}}
                     {{#HasReturnType}} 
-                    return {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/HasReturnType}}{{^HasReturnType}}
+                    return {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+                    {{/HasReturnType}}
+                    {{^HasReturnType}}
                     {{#IsAsync}}
-                    return {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/IsAsync}}{{^IsAsync}}
-                    {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+                    return {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+                    {{/IsAsync}}
+                    {{^IsAsync}}
+                    {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
                     break;
                     {{/IsAsync}}
                     {{/HasReturnType}}
-                    {{/AddVisitFallback}}{{^AddVisitFallback}}
+                    {{/AddVisitFallback}}
+                    {{^AddVisitFallback}}
                     throw new System.NotSupportedException(""Unsupported type"");
                     {{/AddVisitFallback}}
             }
         }
         {{/AddVisitRedirect}}
+
         {{#ImplementationTypes}}
         public partial {{>ResponseNested}} {{&VisitMethodName}}({{&TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
         {{/ImplementationTypes}}
-    {{/ImplementationGroup}}
-{{/VisitOptionsClass}}
-{{<VisitOptionsInterface}}
-{{#ImplementationGroup}}
-        {{#AddVisitFallback}}
-        {{>Response}} {{&VisitMethodName}}FallBack({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
-        {{/AddVisitFallback}}
-        {{#AddVisitRedirect}}
-        {{>Response}} {{&VisitMethodName}}Redirect({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
-        {{/AddVisitRedirect}}
-        {{#ImplementationTypes}}
-        {{>ResponseNested}} {{&VisitMethodName}}({{&TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}}{{#Args}}, {{&.}}{{/Args}});
-        {{/ImplementationTypes}}
-{{/ImplementationGroup}}
-{{/VisitOptionsInterface}}
-
-namespace {{&OutputNamespace}}
-{
-    {{&AccessibilityModifier}} partial {{&KeywordTypeDefinition}} {{&OriginalTypeDefinition}}
-    {
-{{#IsInterface}}{{>VisitOptionsInterface}}{{/IsInterface}}{{^IsInterface}}{{>VisitOptionsClass}}{{/IsInterface}}
+        {{/ImplementationGroup}}
     }
+    {{/IsInterface}}
+
     {{#Visitable.GenerateVisitable}}
     {{&AccessibilityModifier}} partial interface {{&Visitable.VisitableTypeName}} {
         {{>LowResponse}} {{&Visitable.AcceptMethodName}}{{&GenericTypesDefinition}}({{&BaseTypeDefinition}}{{&GenericTypesDefinition}} visitor{{#Visitable.VisitableParameters}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/Visitable.VisitableParameters}});
     }
     {{/Visitable.GenerateVisitable}}
+
     {{#Default.GenerateDefault}}
     {{#Default.ForcePublic}}public {{/Default.ForcePublic}}{{^Default.ForcePublic}}{{&AccessibilityModifier}} {{/Default.ForcePublic}}{{#Default.IsAbstract}}abstract {{/Default.IsAbstract}}{{#Default.IsPartial}}partial {{/Default.IsPartial}}class Default{{&Default.DefaultTypeName}}{{&GenericTypesDefinition}} : {{&BaseTypeDefinition}}{{&GenericTypesDefinition}}
     {
         {{#ImplementationGroup}}
         {{#AddVisitFallback}}
         {{#Default.IsAbstract}}
-        public abstract {{>Response}} {{&VisitMethodName}}FallBack({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
-        {{/Default.IsAbstract}}{{^Default.IsAbstract}}
+        public abstract {{>Response}} {{&VisitMethodName}}Fallback({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
+        {{/Default.IsAbstract}}
+        {{^Default.IsAbstract}}
         {{#Default.IsPartial}}
-        public partial {{>Response}} {{&VisitMethodName}}FallBack({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
-        {{/Default.IsPartial}}{{^Default.IsPartial}}
-        public virtual {{>Response}} {{&VisitMethodName}}FallBack({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}})
+        public partial {{>Response}} {{&VisitMethodName}}Fallback({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
+        {{/Default.IsPartial}}
+        {{^Default.IsPartial}}
+        public virtual {{>Response}} {{&VisitMethodName}}Fallback({{&VisitedType.TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}})
         {
             throw new System.NotImplementedException();
         }
@@ -110,10 +122,12 @@ namespace {{&OutputNamespace}}
                 case {{&TypeFullName}} x:
                     {{#HasReturnType}} 
                     return {{&VisitMethodName}}(x{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/HasReturnType}}{{^HasReturnType}}
+                    {{/HasReturnType}}
+                    {{^HasReturnType}}
                     {{#IsAsync}}
                     return {{&VisitMethodName}}(x{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/IsAsync}}{{^IsAsync}}
+                    {{/IsAsync}}
+                    {{^IsAsync}}
                     {{&VisitMethodName}}(x{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
                     break;
                     {{/IsAsync}}
@@ -122,37 +136,46 @@ namespace {{&OutputNamespace}}
                 default:
                     {{#AddVisitFallback}}
                     {{#HasReturnType}}
-                    return {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/HasReturnType}}{{^HasReturnType}}
+                    return {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+                    {{/HasReturnType}}
+                    {{^HasReturnType}}
                     {{#IsAsync}}
-                    return {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-                    {{/IsAsync}}{{^IsAsync}}
-                    {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+                    return {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+                    {{/IsAsync}}
+                    {{^IsAsync}}
+                    {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
                     break;
                     {{/IsAsync}}
                     {{/HasReturnType}}
-                    {{/AddVisitFallback}}{{^AddVisitFallback}}
+                    {{/AddVisitFallback}}
+                    {{^AddVisitFallback}}
                     throw new System.NotSupportedException();
                     {{/AddVisitFallback}}
             }
         }
         {{/AddVisitRedirect}}
         {{#ImplementationTypes}}
+
         {{#Default.IsVisitAbstract}}
         public abstract {{>ResponseNested}} {{&VisitMethodName}}({{&TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}});
-        {{/Default.IsVisitAbstract}}{{^Default.IsVisitAbstract}}
+        {{/Default.IsVisitAbstract}}
+
+        {{^Default.IsVisitAbstract}}
         public virtual {{>ResponseNested}} {{&VisitMethodName}}({{&TypeFullName}} element{{#TypedArgs}}, {{&ParamTypeFullName}} {{&SanitizedParamName}}{{/TypedArgs}})
         {
-            {{#HasReturnType}}   
+            {{#HasReturnType}}
             {{#AddVisitFallback}}
-            return {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-            {{/AddVisitFallback}}{{^AddVisitFallback}}
+            return {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+            {{/AddVisitFallback}}
+            {{^AddVisitFallback}}
             return default!;
             {{/AddVisitFallback}}
-            {{/HasReturnType}}{{^HasReturnType}}
+            {{/HasReturnType}}
+            {{^HasReturnType}}
             {{#AddVisitFallback}}
-            {{&VisitMethodName}}FallBack(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
-            {{/AddVisitFallback}}{{^AddVisitFallback}}
+            {{&VisitMethodName}}Fallback(element{{#TypedArgs}}, {{&SanitizedParamName}}{{/TypedArgs}});
+            {{/AddVisitFallback}}
+            {{^AddVisitFallback}}
             return;
             {{/AddVisitFallback}}
             {{/HasReturnType}}

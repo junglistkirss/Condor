@@ -2,6 +2,7 @@ using Condor.Visitor.Generator;
 using Condor.Visitor.Generator.Abstractions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Immutable;
 
 
 namespace GeneratorsTestProject;
@@ -12,7 +13,7 @@ public class VisitorGeneratorTests
     public void Visitor_auto_interface_filter()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -32,15 +33,9 @@ namespace TestNamespace
     [AutoAcceptor<IBaseType>()]
     public partial interface TestVisitor {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        string code = result.ToString();
         Assert.Contains("public partial interface TestVisitor", code);
         Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
@@ -53,7 +48,7 @@ namespace TestNamespace
     public void Visitor_auto_interface_filterClass()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -67,26 +62,21 @@ namespace TestNamespace
     [AutoAcceptor<BaseType>()]
     public partial interface TestVisitor {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface TestVisitor", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
-        Assert.DoesNotContain("void Visit(TestNamespace.BaseType element);", result.ToString());
-        Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", result.ToString());
+        Assert.Contains("public partial interface TestVisitor", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.BaseType element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", code);
     }
 
     [Fact]
     public void Visitor_auto_interface()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -99,24 +89,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface TestVisitor {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface TestVisitor", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface TestVisitor", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
     }
 
     [Fact]
     public void Visitor_auto_interface__redirect()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -129,24 +114,20 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>(AddVisitRedirect = true)]
     public partial interface TestVisitorWithRedirect {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface TestVisitorWithRedirect", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
-        Assert.Contains("void VisitRedirect(TestNamespace.MyBaseType element);", result.ToString());
+        Assert.Contains("public partial interface TestVisitorWithRedirect", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
+        Assert.Contains("void VisitRedirect(TestNamespace.MyBaseType element);", code);
     }
+
     [Fact]
     public void Visitor_auto_interface_generic_in_out()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -159,23 +140,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitor<out T, in TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<out T, in TArgs>", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<out T, in TArgs>", code);
+        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", code);
+        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", code);
     }
+
     [Fact]
     public void Visitor_auto_interface_generic_in()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -188,23 +165,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitor<T, in TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<T, in TArgs>", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<T, in TArgs>", code);
+        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", code);
+        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", code);
     }
+
     [Fact]
     public void Visitor_auto_interface_generic()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -217,23 +190,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitor<T, TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<T, TArgs>", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<T, TArgs>", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
     }
+
     [Fact]
     public void Visitor_auto_interface_generic_out()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -246,24 +215,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitor<out T, TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<out T, TArgs>", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<out T, TArgs>", code);
+        Assert.Contains("T Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("T Visit(TestNamespace.MyType2 element);", code);
     }
 
     [Fact]
     public void Async_Visitor_auto_interface()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -276,23 +240,18 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitorAsync {}
 }";
-
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create([GeneratorExtensions.AsSourceGenerator(generator)], parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor));
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var compil, out var diag);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitorAsync", result.ToString());
-        Assert.Contains("ValueTask Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("ValueTask Visit(TestNamespace.MyType2 element);", result.ToString());
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
+        Assert.Contains("public partial interface ITestVisitorAsync", code);
+        Assert.Contains("ValueTask Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("ValueTask Visit(TestNamespace.MyType2 element);", code);
     }
+
     [Fact]
     public void Async_Visitor_auto_interface_generic_in_out()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -305,23 +264,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitorAsync<out T, in TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitorAsync<out T, in TArgs>", result.ToString());
-        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
-        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitorAsync<out T, in TArgs>", code);
+        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element, TArgs args);", code);
+        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element, TArgs args);", code);
     }
+
     [Fact]
     public void Async_Visitor_auto_interface_generic_in()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -334,23 +289,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitorAsync<T, in TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitorAsync<T, in TArgs>", result.ToString());
-        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
-        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitorAsync<T, in TArgs>", code);
+        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element, TArgs args);", code);
+        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element, TArgs args);", code);
     }
+
     [Fact]
     public void Async_Visitor_auto_interface_generic()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -363,24 +314,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitorAsync<T, TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitorAsync<T, TArgs>", result.ToString());
-        Assert.Contains("ValueTask Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("ValueTask Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitorAsync<T, TArgs>", code);
+        Assert.Contains("ValueTask Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("ValueTask Visit(TestNamespace.MyType2 element);", code);
     }
 
     [Fact]
     public void Async_Visitor_auto_interface_generic_out()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -393,25 +339,19 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial interface ITestVisitorAsync<out T, TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitorAsync<out T, TArgs>", result.ToString());
-        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitorAsync<out T, TArgs>", code);
+        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("ValueTask<T> Visit(TestNamespace.MyType2 element);", code);
     }
-
 
     [Fact]
     public void Visitor_interfaceFallBack()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -421,36 +361,24 @@ namespace TestNamespace
     public class MyType2 : MyType {}
 
     [Visitor]
-    [AutoAcceptor<MyType>(Accept = AcceptedKind.Concrete, AddVisitRedirect = true, AddVisitFallBack = true)]
+    [AutoAcceptor<MyType>(Accept = AcceptedKind.Concrete, AddVisitRedirect = true, AddVisitFallback = true)]
     [GenerateVisitable, GenerateDefault(Options = OptionsDefault.AsbtractPartial, VisitOptions = VisitOptions.AbstractVisit)]
-    public partial interface TestVisitor {}
+    public partial interface TestVisitor : ITestVisitable {}
 }";
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        var compilationDiagnostics = compilation.GetDiagnostics();
-            Assert.Empty(compilationDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            [GeneratorExtensions.AsSourceGenerator(generator)],
-            parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor)
-        );
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-        // Assert
-        Assert.Empty(diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        string code = result.ToString();
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
         Assert.Contains("public partial interface TestVisitor", code);
         Assert.DoesNotContain("void Visit(TestNamespace.MyType element);", code);
         Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
         Assert.Contains("public abstract void VisitFallBack(TestNamespace.MyType element)", code);
     }
+
     [Fact]
     public void Visitor_interface()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -463,23 +391,19 @@ namespace TestNamespace
     [Acceptor<MyType2>]
     public partial interface TestVisitor {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface TestVisitor", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface TestVisitor", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
     }
+
     [Fact]
     public void Visitor_interface_generic_in_out()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -492,23 +416,19 @@ namespace TestNamespace
     [Acceptor<MyType2>]
     public partial interface ITestVisitor<out T, in TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<out T, in TArgs>", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<out T, in TArgs>", code);
+        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", code);
+        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", code);
     }
+
     [Fact]
     public void Visitor_interface_generic_in()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -521,23 +441,19 @@ namespace TestNamespace
     [Acceptor<MyType2>]
     public partial interface ITestVisitor<T, in TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<T, in TArgs>", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<T, in TArgs>", code);
+        Assert.Contains("T Visit(TestNamespace.MyType1 element, TArgs args);", code);
+        Assert.Contains("T Visit(TestNamespace.MyType2 element, TArgs args);", code);
     }
+
     [Fact]
     public void Visitor_interface_generic()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -550,23 +466,19 @@ namespace TestNamespace
     [Acceptor<MyType2>]
     public partial interface ITestVisitor<T, TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<T, TArgs>", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<T, TArgs>", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
     }
+
     [Fact]
     public void Visitor_interface_generic_out()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -579,24 +491,19 @@ namespace TestNamespace
     [Acceptor<MyType2>]
     public partial interface ITestVisitor<out T, TArgs> {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface ITestVisitor<out T, TArgs>", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("T Visit(TestNamespace.MyType2 element);", result.ToString());
+        Assert.Contains("public partial interface ITestVisitor<out T, TArgs>", code);
+        Assert.Contains("T Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("T Visit(TestNamespace.MyType2 element);", code);
     }
 
     [Fact]
     public void Visitor_class()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -607,24 +514,18 @@ namespace TestNamespace
     [Acceptor<MyType>]
     public partial class TestVisitor {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial class TestVisitor", result.ToString());
-        Assert.Contains("public partial void Visit(TestNamespace.MyType element);", result.ToString());
+        Assert.Contains("public partial class TestVisitor", code);
+        Assert.Contains("public partial void Visit(TestNamespace.MyType element);", code);
     }
-
 
     [Fact]
     public void Visitor_auto_class()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Visitor.Generator.Abstractions;
 
 namespace TestNamespace
@@ -637,31 +538,34 @@ namespace TestNamespace
     [AutoAcceptor<MyBaseType>]
     public partial class TestVisitor {}
 }";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
 
-        var compilation = CreateCompilation(source);
-        var generator = new VisitorGenerator();
-        // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGenerators(compilation);
-        // Assert
-        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        string code = result.ToString();
         Assert.Contains("public partial class TestVisitor", code);
         Assert.Contains("public partial void Visit(TestNamespace.MyType1 element);", code);
         Assert.Contains("public partial void Visit(TestNamespace.MyType2 element);", code);
     }
 
-
-    private static Compilation CreateCompilation(string source)
-        => CSharpCompilation.Create(
+    private static string GenerateCode(string source, out Diagnostic[] diagnostics)
+    {
+        Compilation compilation = CSharpCompilation.Create(
             "TestNamespace",
             syntaxTrees: [CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest))],
             references: [
                 .. Basic.Reference.Assemblies.NetStandard20.References.All,
-                // MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                // MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location),
-                // MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
                 MetadataReference.CreateFromFile(typeof(VisitorAttribute).Assembly.Location),
             ],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        VisitorGenerator generator = new VisitorGenerator();
+        // Act
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [GeneratorExtensions.AsSourceGenerator(generator)],
+            parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor)
+        );
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation? outputCompilation, out ImmutableArray<Diagnostic> compilationDiagnostics);
+        // Assert
+        SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
+        diagnostics = [.. compilationDiagnostics];
+        return result.ToString();
+    }
 }
