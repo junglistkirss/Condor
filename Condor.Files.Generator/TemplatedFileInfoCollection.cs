@@ -1,11 +1,13 @@
 ﻿using Condor.Generator.Utils;
+using RobinMustache.Generators.Accessor;
 
 namespace Condor.Constants.Generator;
 
-internal record TemplatedFilesInfo 
+[GenerateAccessor]
+internal record class TemplatedFileInfoCollection 
 {
-    public string OutputNamespace { get; set; }
-    public string ClassName { get; set; }
+    public string OutputNamespace { get; internal set; }
+    public string ClassName { get; internal set; }
     public string TemplateName { get; internal set; }
     public TemplatedFileInfo[] Files { get; internal set; }
     public TargetTypeInfo Type { get; internal set; }

@@ -6,8 +6,8 @@ namespace Condor.Visitor.Generator;
 [GenerateAccessor]
 internal record class OutputVisitorInfo 
 {
-    public string OutputNamespace { get; set; }
-    public string ClassName { get; set; }
+    public string OutputNamespace { get; internal set; }
+    public string ClassName { get; internal set; }
 
     public string VisitMethodName { get; internal set; }
     public string AccessibilityModifier { get; internal set; }

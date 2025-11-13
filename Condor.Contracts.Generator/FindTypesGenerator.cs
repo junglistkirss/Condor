@@ -53,7 +53,11 @@ public class FindTypesGenerator : IIncrementalGenerator
         var (Info, TypesProvider, Templates) = data;
 
         TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                .WithTemplates(Templates).Build();
+            .WithAccessors(x => x
+                .AddDefaultsAccessors()
+                .CreateMemberObjectAccessor<OutputTypeInfo>(OutputTypeInfoAccessor.GetNamedProperty)
+            )
+            .WithTemplates(Templates).Build();
 
         string outputNamespace = Info.AssemblyName;
         TargetTypeInfo[] types = TypesProvider

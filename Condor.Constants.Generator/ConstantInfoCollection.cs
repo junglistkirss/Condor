@@ -6,8 +6,8 @@ namespace Condor.Constants.Generator;
 [GenerateAccessor]
 internal record ConstantInfoCollection
 {
-    public string OutputNamespace { get; set; }
-    public string ClassName { get; set; }
+    public string OutputNamespace { get; internal set; }
+    public string ClassName { get; internal set; }
 
     public string TemplateName { get; internal set; }
     public TargetTypeInfo ConstantType { get; internal set; }
