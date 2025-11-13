@@ -16,17 +16,22 @@ public class ConstantsGenerator : IIncrementalGenerator
         IncrementalValuesProvider<KeyedTemplate> additionalFiles = context.GetTemplates();
 
         IncrementalValuesProvider<ConstsOwnerInfo> visitors = GetConstantsInfo(context);
-        IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantsInfo)> combine = CombineData(visitors, additionalFiles);
+        IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantInfoCollection)> combine = CombineData(visitors, additionalFiles);
 
-        context.RegisterSourceOutput(combine, (ctx, data) =>
+        context.RegisterSourceOutput(combine, (Action<SourceProductionContext, (ImmutableArray<KeyedTemplate>, ConstantInfoCollection)>)((ctx, data) =>
         {
             ImmutableArray<KeyedTemplate> templates = data.Item1;
-            ConstantsInfo template_datas = data.Item2;
+            ConstantInfoCollection template_datas = data.Item2;
 
             string sourceName = string.Join(".", template_datas.ClassName.SanitizeToHintName(), template_datas.TemplateName, "generated");
             try
             {
                 TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
+                    .WithAccessors(x => x
+                        .AddDefaultsAccessors()
+                        .CreateMemberObjectAccessor<ConstantInfo>(ConstantInfoAccessor.GetNamedProperty)
+                        .CreateMemberObjectAccessor<ConstantInfoCollection>(ConstantInfoCollectionAccessor.GetNamedProperty)
+                    )
                     .WithTemplates(templates)
                     .Build();
                 string result = templateProcessor.Render(template_datas.TemplateName, template_datas);
@@ -37,7 +42,7 @@ public class ConstantsGenerator : IIncrementalGenerator
             {
                 ctx.AddSource(sourceName + ".error", $"/*{ex}*/");
             }
-        });
+        }));
 
     }
     private static IncrementalValuesProvider<ConstsOwnerInfo> GetConstantsInfo(IncrementalGeneratorInitializationContext context)
@@ -75,7 +80,7 @@ public class ConstantsGenerator : IIncrementalGenerator
     }
 
 
-    private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantsInfo)> CombineData(
+    private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantInfoCollection)> CombineData(
             IncrementalValuesProvider<ConstsOwnerInfo> consts,
             IncrementalValuesProvider<KeyedTemplate> additionalFiles)
     {
@@ -83,7 +88,7 @@ public class ConstantsGenerator : IIncrementalGenerator
             .Combine(additionalFiles.Collect())
             .Select((data, _) =>
             {
-                return (data.Right, new ConstantsInfo
+                return (data.Right, new ConstantInfoCollection
                 {
                     ClassName = data.Left.Owner.TypeName,
                     ConstantType = data.Left.Owner,

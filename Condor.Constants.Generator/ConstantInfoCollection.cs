@@ -1,8 +1,10 @@
 ﻿using Condor.Generator.Utils;
+using RobinMustache.Generators.Accessor;
 
 namespace Condor.Constants.Generator;
 
-internal record ConstantsInfo
+[GenerateAccessor]
+internal record ConstantInfoCollection
 {
     public string OutputNamespace { get; set; }
     public string ClassName { get; set; }
