@@ -1,45 +1,44 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Condor.Generator.Utils.Visitors
+namespace Condor.Generator.Utils.Visitors;
+
+public sealed class FriendlyNameVisitor : SymbolVisitor<string>
 {
-    public sealed class FriendlyNameVisitor : SymbolVisitor<string>
+    public static readonly FriendlyNameVisitor Instance = new();
+
+    public override string VisitNamespace(INamespaceSymbol x)
     {
-        public static readonly FriendlyNameVisitor Instance = new();
-
-        public override string VisitNamespace(INamespaceSymbol x)
-        {
-            return x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
-        }
-        public override string VisitParameter(IParameterSymbol x)
-        {
-            return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-        }
-
-        public override string VisitMethod(IMethodSymbol x)
-        {
-            return x.Name;
-        }
-        public override string VisitNamedType(INamedTypeSymbol x)
-        {
-            //if (x.IsGenericType)
-            //{
-            //    return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat.WithGenericsOptions(SymbolDisplayGenericsOptions.None));
-            //}
-            if (x.IsUnmanagedType)
-                return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-            return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat
-                .AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.ExpandNullable));
-        }
+        return x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
+    }
+    public override string VisitParameter(IParameterSymbol x)
+    {
+        return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
     }
 
-    public sealed class GenericBaseTypeNameVisitor : SymbolVisitor<string>
+    public override string VisitMethod(IMethodSymbol x)
     {
-        public static readonly GenericBaseTypeNameVisitor Instance = new();
+        return x.Name;
+    }
+    public override string VisitNamedType(INamedTypeSymbol x)
+    {
+        //if (x.IsGenericType)
+        //{
+        //    return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat.WithGenericsOptions(SymbolDisplayGenericsOptions.None));
+        //}
+        if (x.IsUnmanagedType)
+            return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+        return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat
+            .AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.ExpandNullable));
+    }
+}
 
-        public override string VisitNamedType(INamedTypeSymbol x)
-        {
-            return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat
-                    .RemoveGenericsOptions(SymbolDisplayGenericsOptions.IncludeTypeParameters));
-        }
+public sealed class GenericBaseTypeNameVisitor : SymbolVisitor<string>
+{
+    public static readonly GenericBaseTypeNameVisitor Instance = new();
+
+    public override string VisitNamedType(INamedTypeSymbol x)
+    {
+        return x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat
+                .RemoveGenericsOptions(SymbolDisplayGenericsOptions.IncludeTypeParameters));
     }
 }

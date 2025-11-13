@@ -21,6 +21,11 @@ namespace TestNamespace
     public interface ISubType : IBaseType {}
     public class MyType1 : IBaseType{}
     public class MyType2 : IBaseType{}
+    public class MyType3 : IBaseType{}
+    public class MyType4 : IBaseType{}
+    public class MyType5 : IBaseType{}
+    public class MyType6 : IBaseType{}
+    public class MyType7 : IBaseType{}
     public class ExtraType {}
 
     [Visitor]
@@ -35,12 +40,13 @@ namespace TestNamespace
         driver = driver.RunGenerators(compilation);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial interface TestVisitor", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("void Visit(TestNamespace.MyType2 element);", result.ToString());
-        Assert.DoesNotContain("void Visit(TestNamespace.IBaseType element);", result.ToString());
-        Assert.DoesNotContain("void Visit(TestNamespace.ISubType element);", result.ToString());
-        Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", result.ToString());
+        string code = result.ToString();
+        Assert.Contains("public partial interface TestVisitor", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.IBaseType element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.ISubType element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", code);
     }
 
     [Fact]
@@ -639,9 +645,10 @@ namespace TestNamespace
         driver = driver.RunGenerators(compilation);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("public partial class TestVisitor", result.ToString());
-        Assert.Contains("public partial void Visit(TestNamespace.MyType1 element);", result.ToString());
-        Assert.Contains("public partial void Visit(TestNamespace.MyType2 element);", result.ToString());
+        string code = result.ToString();
+        Assert.Contains("public partial class TestVisitor", code);
+        Assert.Contains("public partial void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("public partial void Visit(TestNamespace.MyType2 element);", code);
     }
 
 

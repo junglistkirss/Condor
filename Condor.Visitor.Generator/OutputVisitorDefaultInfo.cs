@@ -1,15 +1,14 @@
 ﻿using RobinMustache.Generators.Accessor;
 
-namespace Condor.Visitor.Generator
+namespace Condor.Visitor.Generator;
+
+[GenerateAccessor]
+internal record class OutputVisitorDefaultInfo
 {
-    [GenerateAccessor]
-    internal record class OutputVisitorDefaultInfo
-    {
-        public bool ForcePublic { get; internal set; }
-        public bool IsAbstract { get; internal set; }
-        public bool IsPartial { get; internal set; }
-        public bool GenerateDefault { get; internal set; }
-        public bool IsVisitAbstract { get; internal set; }
-        public string DefaultTypeName { get; internal set; }
-    }
+    public bool ForcePublic { get; internal set; }
+    public bool IsAbstract { get; internal set; }
+    public bool IsPartial { get; internal set; }
+    public bool GenerateDefault { get; internal set; }
+    public bool IsVisitAbstract { get; internal set; }
+    public string DefaultTypeName { get; internal set; }
 }
