@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Condor.Generator.Utils;
+using Condor.Generator.Utils.Templating;
+using Condor.Generator.Utils.Visitors;
+using Condor.Visitor.Generator.Abstractions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
-using Condor.Generator.Utils;
-using Condor.Generator.Utils.Visitors;
-using Microsoft.CodeAnalysis.CSharp;
-using Condor.Generator.Utils.Templating;
-using Condor.Visitor.Generator.Abstractions;
 using System.Text.RegularExpressions;
 
 namespace Condor.Visitor.Generator;

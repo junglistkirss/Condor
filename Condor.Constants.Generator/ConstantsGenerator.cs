@@ -1,10 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Condor.Constants.Generator.Abstractions;
+using Condor.Generator.Utils;
+using Condor.Generator.Utils.Templating;
+using Condor.Generator.Utils.Visitors;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
-using Condor.Generator.Utils;
-using Condor.Generator.Utils.Visitors;
-using Condor.Generator.Utils.Templating;
-using Condor.Constants.Generator.Abstractions;
 
 namespace Condor.Constants.Generator;
 
@@ -18,7 +18,7 @@ public class ConstantsGenerator : IIncrementalGenerator
         IncrementalValuesProvider<ConstsOwnerInfo> visitors = GetConstantsInfo(context);
         IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantInfoCollection)> combine = CombineData(visitors, additionalFiles);
 
-        context.RegisterSourceOutput(combine, (Action<SourceProductionContext, (ImmutableArray<KeyedTemplate>, ConstantInfoCollection)>)((ctx, data) =>
+        context.RegisterSourceOutput(combine, (ctx, data) =>
         {
             ImmutableArray<KeyedTemplate> templates = data.Item1;
             ConstantInfoCollection template_datas = data.Item2;
@@ -42,7 +42,7 @@ public class ConstantsGenerator : IIncrementalGenerator
             {
                 ctx.AddSource(sourceName + ".error", $"/*{ex}*/");
             }
-        }));
+        });
 
     }
     private static IncrementalValuesProvider<ConstsOwnerInfo> GetConstantsInfo(IncrementalGeneratorInitializationContext context)

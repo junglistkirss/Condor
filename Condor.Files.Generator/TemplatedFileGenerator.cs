@@ -1,9 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Collections.Immutable;
+﻿using Condor.Files.Generator.Abstractions;
 using Condor.Generator.Utils;
-using Condor.Generator.Utils.Visitors;
 using Condor.Generator.Utils.Templating;
-using Condor.Files.Generator.Abstractions;
+using Condor.Generator.Utils.Visitors;
+using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Condor.Files.Generator;

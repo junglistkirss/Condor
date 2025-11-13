@@ -4,7 +4,7 @@ using RobinMustache.Generators.Accessor;
 namespace Condor.Contracts.Generator;
 
 [GenerateAccessor]
-internal record class OutputTypeInfo 
+internal record class OutputTypeInfo
 {
     public string OutputNamespace { get; internal set; }
     public string ClassName { get; internal set; }

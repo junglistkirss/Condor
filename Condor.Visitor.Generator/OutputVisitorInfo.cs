@@ -3,7 +3,7 @@
 namespace Condor.Visitor.Generator;
 
 [GenerateAccessor]
-internal record class OutputVisitorInfo 
+internal record class OutputVisitorInfo
 {
     public string OutputNamespace { get; internal set; }
     public string ClassName { get; internal set; }

@@ -1,9 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Collections.Immutable;
-using Condor.Contracts.Generator.Abstractions;
+﻿using Condor.Contracts.Generator.Abstractions;
 using Condor.Generator.Utils;
 using Condor.Generator.Utils.Templating;
 using Condor.Generator.Utils.Visitors;
+using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 
 namespace Condor.Contracts.Generator;
 
@@ -83,7 +83,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                     Map = [.. group],
                 };
                 string result = templateProcessor.Render(Info.TemplateKey, template_datas);
-                ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
+                ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
             }
         }
         else
@@ -97,7 +97,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                 Map = types,
             };
             string result = templateProcessor.Render(Info.TemplateKey, template_datas);
-            ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
+            ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
         }
 
     }

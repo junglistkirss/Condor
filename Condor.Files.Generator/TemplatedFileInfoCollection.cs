@@ -4,7 +4,7 @@ using RobinMustache.Generators.Accessor;
 namespace Condor.Files.Generator;
 
 [GenerateAccessor]
-internal record class TemplatedFileInfoCollection 
+internal record class TemplatedFileInfoCollection
 {
     public string OutputNamespace { get; internal set; }
     public string ClassName { get; internal set; }
