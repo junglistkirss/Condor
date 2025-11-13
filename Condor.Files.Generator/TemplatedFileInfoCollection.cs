@@ -1,7 +1,7 @@
 ﻿using Condor.Generator.Utils;
 using RobinMustache.Generators.Accessor;
 
-namespace Condor.Constants.Generator;
+namespace Condor.Files.Generator;
 
 [GenerateAccessor]
 internal record class TemplatedFileInfoCollection 

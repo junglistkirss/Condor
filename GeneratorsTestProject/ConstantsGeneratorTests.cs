@@ -27,7 +27,7 @@ namespace TestNamespace
         public const string test3 = ""test"";
     }
 }";
-        StringAdditionalText template = new StringAdditionalText("template.mustache", @"namespace {{OutputNamespace}}
+        StringAdditionalText template = new("template.mustache", @"namespace {{OutputNamespace}}
 {
     public static partial class {{ClassName}}
     {
@@ -60,7 +60,7 @@ namespace TestNamespace
                 MetadataReference.CreateFromFile(typeof(ConstantAttribute).Assembly.Location),
             ],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        ConstantsGenerator generator = new ConstantsGenerator();
+        ConstantsGenerator generator = new();
         // Act
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             [GeneratorExtensions.AsSourceGenerator(generator)],
@@ -68,25 +68,16 @@ namespace TestNamespace
         );
         if (additionalTexts.Length > 0)
             driver = driver.AddAdditionalTexts([.. additionalTexts]);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation? outputCompilation, out ImmutableArray<Diagnostic> compilationDiagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation? _, out ImmutableArray<Diagnostic> compilationDiagnostics);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
         diagnostics = [.. compilationDiagnostics];
         return result.ToString();
     }
 
-    public class StringAdditionalText : AdditionalText
+    public class StringAdditionalText(string path, string inline) : AdditionalText
     {
-        private readonly string path;
-        private readonly string inline;
-
         public override string Path => path;
-
-        public StringAdditionalText(string path, string inline)
-        {
-            this.path = path;
-            this.inline = inline;
-        }
 
         public override SourceText GetText(CancellationToken cancellationToken = default)
         {

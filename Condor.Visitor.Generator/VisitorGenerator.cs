@@ -89,7 +89,7 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   var attr = sc.Attributes.Single();
+                   AttributeData attr = sc.Attributes.Single();
                    return new VisitableInfo(sc.TargetSymbol.Accept(StrongNameVisitor.Instance), attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string name) ? name : DefaultAcceptMethodName);
                });
     }
@@ -102,9 +102,9 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   var attr = sc.Attributes.Single();
-                   var vo = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.VisitOptions), out VisitOptions f) ? f : VisitOptions.AbstractVisit;
-                   var o = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.Options), out OptionsDefault od) ? od : OptionsDefault.None;
+                   AttributeData attr = sc.Attributes.Single();
+                   VisitOptions vo = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.VisitOptions), out VisitOptions f) ? f : VisitOptions.AbstractVisit;
+                   OptionsDefault o = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.Options), out OptionsDefault od) ? od : OptionsDefault.None;
                    return new GenerateDefaultInfo(
                         sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                         GenerateDefault: true,
@@ -148,7 +148,7 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   var attr = sc.Attributes.Single();
+                   AttributeData attr = sc.Attributes.Single();
                    return new VisitorInfo(
                        sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                        sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
@@ -191,7 +191,7 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   var attr = sc.Attributes.Single();
+                   AttributeData attr = sc.Attributes.Single();
                    return new OutputInfo(
                        sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
                        ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance)

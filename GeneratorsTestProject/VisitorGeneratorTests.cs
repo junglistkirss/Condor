@@ -371,7 +371,7 @@ namespace TestNamespace
         Assert.DoesNotContain("void Visit(TestNamespace.MyType element);", code);
         Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
         Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
-        Assert.Contains("public abstract void VisitFallBack(TestNamespace.MyType element)", code);
+        Assert.Contains("public abstract void VisitFallback(TestNamespace.MyType element)", code);
     }
 
     [Fact]
@@ -556,7 +556,7 @@ namespace TestNamespace
                 MetadataReference.CreateFromFile(typeof(VisitorAttribute).Assembly.Location),
             ],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        VisitorGenerator generator = new VisitorGenerator();
+        VisitorGenerator generator = new();
         // Act
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             [GeneratorExtensions.AsSourceGenerator(generator)],

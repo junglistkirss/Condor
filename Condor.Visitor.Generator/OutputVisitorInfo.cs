@@ -1,5 +1,4 @@
-﻿using Condor.Generator.Utils;
-using RobinMustache.Generators.Accessor;
+﻿using RobinMustache.Generators.Accessor;
 
 namespace Condor.Visitor.Generator;
 

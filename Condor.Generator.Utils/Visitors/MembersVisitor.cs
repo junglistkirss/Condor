@@ -18,7 +18,7 @@ public sealed class MembersVisitor<T> : SymbolVisitor<MemberInfo[]>
 public static class MapMembers
 {
     public static MapMembersVisitor<IPropertySymbol, TOut> Properties<TOut>(Func<IPropertySymbol, TOut> map)
-        => new MapMembersVisitor<IPropertySymbol, TOut>(map);
+        => new(map);
 
 
 }

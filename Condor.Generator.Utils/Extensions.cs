@@ -102,8 +102,8 @@ public static class Extensions
 
     public static string SanitizeBaseOrInterfaceName(this string name)
     {
-        var sanitize = name;
-        foreach (var item in Removes)
+        string sanitize = name;
+        foreach (string item in Removes)
         {
             if (name.StartsWith(item))
                 sanitize = name.Substring(item.Length);

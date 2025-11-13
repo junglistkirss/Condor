@@ -17,7 +17,7 @@ public class FindTypesGenerator : IIncrementalGenerator
     {
 
 
-        var byAttributes = context.SyntaxProvider
+        IncrementalValuesProvider<(TypeFinderInfo Info, TypesProvider TypesProvider, ImmutableArray<KeyedTemplate> Templates)> byAttributes = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 typeof(FindTypesAttribute<>).FullName,
                 (node, _) => true,
@@ -50,7 +50,7 @@ public class FindTypesGenerator : IIncrementalGenerator
     }
     private void Execute(SourceProductionContext ctx, (TypeFinderInfo Info, TypesProvider TypesProvider, ImmutableArray<KeyedTemplate> Templates) data)
     {
-        var (Info, TypesProvider, Templates) = data;
+        (TypeFinderInfo Info, TypesProvider TypesProvider, ImmutableArray<KeyedTemplate> Templates) = data;
 
         TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
             .WithAccessors(x => x
@@ -60,7 +60,7 @@ public class FindTypesGenerator : IIncrementalGenerator
             .WithTemplates(Templates).Build();
 
         string outputNamespace = Info.AssemblyName;
-        TargetTypeInfo[] types = TypesProvider
+        TargetTypeInfo[] types = [.. TypesProvider
             .Combined(a => a.Name.StartsWith(Info.AssemblyContraint, StringComparison.OrdinalIgnoreCase),
                 x => x.SpecialType == SpecialType.None
                     && (x.IsType || (!Info.IsRecord.HasValue || (x.IsRecord == Info.IsRecord.Value)))
@@ -68,11 +68,11 @@ public class FindTypesGenerator : IIncrementalGenerator
                     && (!Info.IsGeneric.HasValue || (x.IsGenericType == Info.IsGeneric.Value))
                     && (
                         x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName) || x.Accept(BaseTypesVisitor.Instance).Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName))
-                        ).ToArray();
+                        )];
 
         if (Info.GroupByHostAssembly)
         {
-            foreach (var group in types.GroupBy(x => x.ContainingAssembly))
+            foreach (IGrouping<string, TargetTypeInfo> group in types.GroupBy(x => x.ContainingAssembly))
             {
                 string className = group.Key.Replace(".", "").Replace(Info.AssemblyContraint, "");
                 OutputTypeInfo template_datas = new()
@@ -82,7 +82,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                     BaseType = Info.TypeContraint,
                     Map = [.. group],
                 };
-                var result = templateProcessor.Render(Info.TemplateKey, template_datas);
+                string result = templateProcessor.Render(Info.TemplateKey, template_datas);
                 ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
             }
         }
@@ -96,7 +96,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                 BaseType = Info.TypeContraint,
                 Map = types,
             };
-            var result = templateProcessor.Render(Info.TemplateKey, template_datas);
+            string result = templateProcessor.Render(Info.TemplateKey, template_datas);
             ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() +  ".Generated", result);
         }
 

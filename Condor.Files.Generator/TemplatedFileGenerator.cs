@@ -5,7 +5,6 @@ using Condor.Generator.Utils.Visitors;
 using Condor.Generator.Utils.Templating;
 using Condor.Files.Generator.Abstractions;
 using System.Text.RegularExpressions;
-using Condor.Constants.Generator;
 
 namespace Condor.Files.Generator;
 

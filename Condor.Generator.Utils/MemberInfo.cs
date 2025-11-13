@@ -1,7 +1,5 @@
-﻿using RobinMustache.Abstractions.Extensions;
-using RobinMustache.Generators.Accessor;
+﻿using RobinMustache.Generators.Accessor;
 using System.Diagnostics;
-using System.IO;
 
 namespace Condor.Generator.Utils;
 
