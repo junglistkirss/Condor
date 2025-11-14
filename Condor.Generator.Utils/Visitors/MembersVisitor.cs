@@ -1,6 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
-using System.Linq;
 
 namespace Condor.Generator.Utils.Visitors;
 
