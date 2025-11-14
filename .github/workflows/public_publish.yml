@@ -22,6 +22,8 @@ jobs:
       run: dotnet restore ./Condor.slnx
     - name: Build
       run: dotnet build ./Condor.slnx --configuration Release --no-restore
+    - name: Tests
+      run: dotnet test ./Condor.slnx --verbosity normal
     - name: NuGet
       run: dotnet pack ./Condor.slnx --configuration Release -o ./nupkgs
     - name: Push to GitHub package registry
