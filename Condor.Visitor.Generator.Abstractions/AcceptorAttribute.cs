@@ -1,4 +1,7 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Condor.Visitor.Generator.Abstractions;
 
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
-public class AcceptorAttribute<T> : Attribute { }
+[ExcludeFromCodeCoverage]
+public sealed class AcceptorAttribute<T> : Attribute { }

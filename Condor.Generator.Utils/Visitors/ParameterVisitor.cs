@@ -27,7 +27,7 @@ public sealed class ParameterVisitor : SymbolVisitor<ParameterInfo>
             ParameterName = symbol.Name,
             HasDefaultExpression = symbol.HasExplicitDefaultValue,
             DefaultExpression = symbol.HasExplicitDefaultValue ? symbol.ExplicitDefaultValue : null,
-            ParameterType = symbol.Type.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"),
+            ParameterType = symbol.Type.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve parameter type info"),
             IsOptional = symbol.IsOptional,
             IsParams = symbol.IsParams,
             IsExtension = symbol.IsThis,
@@ -35,7 +35,7 @@ public sealed class ParameterVisitor : SymbolVisitor<ParameterInfo>
             IsOut = symbol.RefKind == RefKind.Out,
             IsIn = symbol.RefKind == RefKind.In,
             IsRefReadOnly = symbol.RefKind == RefKind.RefReadOnly,
-            Attributes = symbol.Accept(AttributesVisitor.Instance) ?? throw new NullReferenceException("Attributes required"),
+            Attributes = symbol.Accept(AttributesVisitor.Instance) ?? throw new Exception("Unable to resolve attributes info"),
         };
     }
 }
@@ -49,7 +49,7 @@ public sealed class TypeArgumentVisitor : SymbolVisitor<TypeArgumentInfo>
         {
             Name = symbol.Name,
             HasConstraint = symbol.HasValueTypeConstraint,
-            Contraints = symbol.HasValueTypeConstraint ? [.. symbol.ConstraintTypes.Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"))] : [],
+            Contraints = symbol.HasValueTypeConstraint ? [.. symbol.ConstraintTypes.Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve constraint type info"))] : [],
             IsNullable = symbol.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated,
             IsIn = symbol.Variance == VarianceKind.In,
             IsOut = symbol.Variance == VarianceKind.Out,

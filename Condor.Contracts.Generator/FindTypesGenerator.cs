@@ -17,20 +17,18 @@ public class FindTypesGenerator : IIncrementalGenerator
     {
 
 
-        var byAttributes = context.SyntaxProvider
+        IncrementalValuesProvider<(TypeFinderInfo Info, TypesProvider TypesProvider, ImmutableArray<KeyedTemplate> Templates)> byAttributes = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 typeof(FindTypesAttribute<>).FullName,
                 (node, _) => true,
                 (sc, _) => sc.Attributes.Select(x =>
                 {
-                    if (x.AttributeClass is null)
-                        throw new NullReferenceException("AttributeClass is required");
                     return new TypeFinderInfo
                     {
-                        TypeContraint = x.AttributeClass.TypeArguments.Single().Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol type required"),
-                        AssemblyContraint = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.AssemblyContraint), out string s) ? s : null,
+                        TypeContraint = (x.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single().Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute constraint type info"),
+                        AssemblyContraint = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.AssemblyContraint), out string? s) ? s : null,
                         AssemblyName = sc.TargetSymbol.Name,
-                        Template = x.ConstructorArguments.Single().Value?.ToString() ?? throw new NullReferenceException("Template is missing"),
+                        TemplateKey = x.ConstructorArguments.Single().Value?.ToString() ?? throw new Exception("Template key is required"),
                         IsRecord = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsRecord), out bool r) ? r : null,
                         IsGeneric = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsGeneric), out bool g) ? g : null,
                         IsAbstract = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsAbstract), out bool a) ? a : null,
@@ -52,10 +50,14 @@ public class FindTypesGenerator : IIncrementalGenerator
     }
     private void Execute(SourceProductionContext ctx, (TypeFinderInfo Info, TypesProvider TypesProvider, ImmutableArray<KeyedTemplate> Templates) data)
     {
-        var (Info, TypesProvider, Templates) = data;
+        (TypeFinderInfo Info, TypesProvider TypesProvider, ImmutableArray<KeyedTemplate> Templates) = data;
 
         TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                .WithTemplates(Templates).Build();
+            .WithAccessors(x => x
+                .AddDefaultsAccessors()
+                .CreateMemberObjectAccessor<OutputTypeInfo>(OutputTypeInfoAccessor.GetNamedProperty)
+            )
+            .WithTemplates(Templates).Build();
 
         string outputNamespace = Info.AssemblyName;
         TargetTypeInfo[] types = [.. TypesProvider
@@ -68,11 +70,9 @@ public class FindTypesGenerator : IIncrementalGenerator
                         x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName) || x.Accept(BaseTypesVisitor.Instance).Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName))
                         )];
 
-        string template = Templates.FirstOrDefault(x => x.Key == Info.Template)?.Template ?? throw new InvalidDataException($"Missing template {Info.Template}");
-
         if (Info.GroupByHostAssembly)
         {
-            foreach (var group in types.GroupBy(x => x.ContainingAssembly))
+            foreach (IGrouping<string, TargetTypeInfo> group in types.GroupBy(x => x.ContainingAssembly))
             {
                 string className = group.Key.Replace(".", "").Replace(Info.AssemblyContraint, "");
                 OutputTypeInfo template_datas = new()
@@ -82,8 +82,8 @@ public class FindTypesGenerator : IIncrementalGenerator
                     BaseType = Info.TypeContraint,
                     Map = [.. group],
                 };
-                var result = templateProcessor.Render(template, template_datas);
-                ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
+                string result = templateProcessor.Render(Info.TemplateKey, template_datas);
+                ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
             }
         }
         else
@@ -96,8 +96,8 @@ public class FindTypesGenerator : IIncrementalGenerator
                 BaseType = Info.TypeContraint,
                 Map = types,
             };
-            var result = templateProcessor.Render(template, template_datas);
-            ctx.AddSource(Info.Template + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
+            string result = templateProcessor.Render(Info.TemplateKey, template_datas);
+            ctx.AddSource(Info.TemplateKey + "-" + className + "_" + Info.TypeContraint.TypeName.SanitizeToHintName() + ".Generated", result);
         }
 
     }

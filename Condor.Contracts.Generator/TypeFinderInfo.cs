@@ -13,6 +13,6 @@ internal record struct TypeFinderInfo
     public bool? IsRecord { get; internal set; }
     public bool? IsGeneric { get; internal set; }
     public bool? IsAbstract { get; internal set; }
-    public string Template { get; internal set; }
+    public string TemplateKey { get; internal set; }
     public bool GroupByHostAssembly { get; internal set; }
 }

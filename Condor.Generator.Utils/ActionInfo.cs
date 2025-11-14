@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
+﻿using RobinMustache.Generators.Accessor;
+using System.Diagnostics;
 
 namespace Condor.Generator.Utils;
 
 [DebuggerDisplay("{Definition}")]
-public record class ActionInfo
+[GenerateAccessor]
+public sealed record class ActionInfo
 {
     public bool IsStatic { get; internal set; }
     public string Name { get; internal set; } = default!;

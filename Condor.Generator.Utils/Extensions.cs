@@ -23,11 +23,10 @@ public static class Extensions
                     .Select((text, cancellationToken) =>
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        return new KeyedTemplate
-                        {
-                            Key = Path.GetFileNameWithoutExtension(text.Path),
-                            Template = text.GetText(cancellationToken)?.ToString() ?? throw new NullReferenceException("Template is empty")
-                        };
+                        return new KeyedTemplate(
+                            Path.GetFileNameWithoutExtension(text.Path),
+                            text.GetText(cancellationToken)?.ToString() ?? throw new Exception("Additional file content is required")
+                        );
                     });
     }
     public static IncrementalValueProvider<TypesProvider> GetTypesProvider(this IncrementalGeneratorInitializationContext context)
@@ -42,7 +41,7 @@ public static class Extensions
                      .Where(assemblyPredicate) // CRACRA ça, trouver un autre moyen pour filrer les assemblys
                      .SelectMany(s =>
                      {
-                         return s.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"));
+                         return s.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"));
                      });
                  };
              })
@@ -52,7 +51,7 @@ public static class Extensions
                  cancellationToken.ThrowIfCancellationRequested();
                  return (symbolPredicate) =>
                  {
-                     return cp.SourceModule.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"));
+                     return cp.SourceModule.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"));
                  };
              }))
              .Select((x, cancellationToken) =>
@@ -62,10 +61,10 @@ public static class Extensions
              });
     }
     public static IEnumerable<TargetTypeInfo> GetTypedArguments(this INamedTypeSymbol data)
-        => data.TypeArguments.Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"));
-    public static bool TryGetNamedArgument<T>(this AttributeData data, string name, out T value)
+        => data.TypeArguments.Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve argument type info"));
+    public static bool TryGetNamedArgument<T>(this AttributeData data, string name, out T? value)
     {
-        value = default!;
+        value = default;
         if (data != null && data.NamedArguments.Length > 0 && data.NamedArguments.Any(x => x.Key == name))
         {
             TypedConstant val = data.NamedArguments.Single(x => x.Key == name).Value;
@@ -73,15 +72,15 @@ public static class Extensions
             {
                 if (val.Kind == TypedConstantKind.Array)
                     throw new InvalidOperationException($"Named argument {name} is an array");
-                value = (T)val.Value!;
+                value = (T?)val.Value;
                 return true;
             }
         }
         return false;
     }
-    public static bool TryGetNamedArgumentMany<T>(this AttributeData data, string name, out T[] value)
+    public static bool TryGetNamedArgumentMany<T>(this AttributeData data, string name, out T?[] value)
     {
-        value = default!;
+        value = [];
         if (data != null && data.NamedArguments.Length > 0 && data.NamedArguments.Any(x => x.Key == name))
         {
             TypedConstant val = data.NamedArguments.Single(x => x.Key == name).Value;
@@ -89,7 +88,7 @@ public static class Extensions
             {
                 if (val.Kind != TypedConstantKind.Array)
                     throw new InvalidOperationException($"Named argument {name} is not an array");
-                value = [.. val.Values.Select(x => (T)x.Value!)];
+                value = [.. val.Values.Select(x => (T?)x.Value)];
                 return true;
             }
         }
@@ -99,8 +98,8 @@ public static class Extensions
 
     public static string SanitizeBaseOrInterfaceName(this string name)
     {
-        var sanitize = name;
-        foreach (var item in Removes)
+        string sanitize = name;
+        foreach (string item in Removes)
         {
             if (name.StartsWith(item))
                 sanitize = name.Substring(item.Length);

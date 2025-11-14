@@ -1,7 +1,10 @@
-﻿namespace Condor.Contracts.Generator.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Condor.Contracts.Generator.Abstractions;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
-public class FindTypesAttribute<T>(string template) : Attribute
+[ExcludeFromCodeCoverage]
+public sealed class FindTypesAttribute<T>(string template) : Attribute
 {
     public string Template { get; } = template;
     public string? AssemblyContraint { get; set; }

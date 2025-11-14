@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
+﻿using RobinMustache.Generators.Accessor;
+using System.Diagnostics;
 
 namespace Condor.Generator.Utils;
 
 [DebuggerDisplay("{TypeFullName}")]
-public record class TargetTypeInfo
+[GenerateAccessor]
+public sealed record class TargetTypeInfo
 {
     public string ContainingAssembly { get; internal set; } = default!;
     public string ContainingNamespace { get; internal set; } = default!;

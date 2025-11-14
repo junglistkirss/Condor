@@ -1,7 +1,10 @@
-﻿namespace Condor.Constants.Generator.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Condor.Constants.Generator.Abstractions;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
-public class ConstantsAttribute(string template) : Attribute
+[ExcludeFromCodeCoverage]
+public sealed class ConstantsAttribute(string template) : Attribute
 {
     public string Template { get; } = template;
 

@@ -20,7 +20,6 @@ public class VisitorGenerator : IIncrementalGenerator
     {
 
         IncrementalValueProvider<TypesProvider> types = context.GetTypesProvider();
-        IncrementalValuesProvider<KeyedTemplate> additionalFiles = context.GetTemplates();
 
         IncrementalValuesProvider<VisitorInfo> visitors = GetVisitorsInfo(context);
         IncrementalValuesProvider<AcceptorInfo> acceptors = GetAcceptorsInfo(context);
@@ -30,22 +29,26 @@ public class VisitorGenerator : IIncrementalGenerator
         IncrementalValuesProvider<GenerateDefaultInfo> @default = GetGenerateDefaultInfo(context);
         IncrementalValuesProvider<VisitableInfo> visitable = GetVisitableInfo(context);
         IncrementalValuesProvider<AcceptParamInfo> acceptParams = GetAcceptParamInfo(context);
-        IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, OutputVisitorInfo)> combine = CombineData(visitors, acceptors, autoAcceptor, output, @default, visitable, acceptParams, visitParams, additionalFiles);
+        IncrementalValuesProvider<OutputVisitorInfo> combine = CombineData(visitors, acceptors, autoAcceptor, output, @default, visitable, acceptParams, visitParams);
 
         context.RegisterSourceOutput(combine, (ctx, data) =>
         {
-            ImmutableArray<KeyedTemplate> templates = data.Item1;
-            OutputVisitorInfo template_datas = data.Item2;
-
-            string sourceName = string.Join(".", template_datas.ClassName.SanitizeToHintName(), VisitorTemplateName, "generated");
+            string sourceName = string.Join(".", data.ClassName.SanitizeToHintName(), VisitorTemplateName, "generated");
             try
             {
                 TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                    .WithTemplates(templates).Build();
+                    .WithAccessors(x => x
+                        .AddDefaultsAccessors()
+                        .CreateMemberObjectAccessor<NamedParamInfo>(NamedParamInfoAccessor.GetNamedProperty)
+                        .CreateMemberObjectAccessor<OutputVisitableInfo>(OutputVisitableInfoAccessor.GetNamedProperty)
+                        .CreateMemberObjectAccessor<OutputVisitorDefaultInfo>(OutputVisitorDefaultInfoAccessor.GetNamedProperty)
+                        .CreateMemberObjectAccessor<OutputVisitorInfo>(OutputVisitorInfoAccessor.GetNamedProperty)
+                        .CreateMemberObjectAccessor<ImplGroup>(ImplGroupAccessor.GetNamedProperty)
+                    )
+                    .WithTemplates([new KeyedTemplate(DefaultTemplates.DefaultVisitorTemplateKey, DefaultTemplates.VisitorTemplate)])
+                    .Build();
 
-                string template = templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
-
-                var result = templateProcessor.Render(template, template_datas);//, new RendererSettings())
+                string result = templateProcessor.Render(DefaultTemplates.DefaultVisitorTemplateKey, data);
                 ctx.AddSource(sourceName, result);
             }
             catch (Exception ex)
@@ -63,16 +66,11 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   return sc.Attributes.Select(attr =>
-                   {
-                       if (attr.AttributeClass is null)
-                           throw new NullReferenceException("AttributeClass is null");
-                       return (
-                           Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
-                           AcceptParamType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol type required"),
-                           AcceptParamName: attr.TryGetNamedArgument(nameof(AcceptParamAttribute<object>.ParamName), out string n) ? n : null
-                       );
-                   });
+                   return sc.Attributes.Select(attr => (
+                        Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                        AcceptParamType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
+                        AcceptParamName: attr.TryGetNamedArgument(nameof(AcceptParamAttribute<object>.ParamName), out string? n) ? n : null
+                   ));
                }).SelectMany((x, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
@@ -91,10 +89,8 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   var attr = sc.Attributes.Single();
-                   return new VisitableInfo(
-                       sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
-                       attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string name) ? name : DefaultAcceptMethodName);
+                   AttributeData attr = sc.Attributes.Single();
+                   return new VisitableInfo(sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"), attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string? name) ? name ?? throw new Exception("Accept method name cannot be null") : DefaultAcceptMethodName);
                });
     }
 
@@ -106,11 +102,11 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   var attr = sc.Attributes.Single();
-                   var vo = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.VisitOptions), out VisitOptions f) ? f : VisitOptions.AbstractVisit;
-                   var o = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.Options), out OptionsDefault od) ? od : OptionsDefault.None;
+                   AttributeData attr = sc.Attributes.Single();
+                   VisitOptions vo = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.VisitOptions), out VisitOptions f) ? f : VisitOptions.AbstractVisit;
+                   OptionsDefault o = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.Options), out OptionsDefault od) ? od : OptionsDefault.None;
                    return new GenerateDefaultInfo(
-                        sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                        sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
                         GenerateDefault: true,
                         vo == VisitOptions.UseVisitFallBack,
                         o.HasFlag(OptionsDefault.ForcePublic),
@@ -129,16 +125,11 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   return sc.Attributes.Select(attr =>
-                   {
-                       if (attr.AttributeClass is null)
-                           throw new NullReferenceException("AttributeClass is required");
-                       return (
-                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required"),
-                            VisitParamType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required"),
-                            VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string n) ? n : null
-                        );
-                   });
+                   return sc.Attributes.Select(attr => (
+                        Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                        VisitParamType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
+                        VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string? n) ? n : null
+                   ));
                }).SelectMany((x, _) =>
                {
                    return x.GroupBy(e => e.Correlation).Select(e =>
@@ -157,14 +148,14 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   var attr = sc.Attributes.Single();
+                   AttributeData attr = sc.Attributes.Single();
                    return new VisitorInfo(
-                       sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
-                       sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
+                       sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                       sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"),
                        ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
                        sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
                        attr.TryGetNamedArgument(nameof(VisitorAttribute.IsAsync), out bool w) && w,
-                       attr.TryGetNamedArgument(nameof(VisitorAttribute.VisitMethodName), out string name) ? name : DefaultVisitMethodName
+                       attr.TryGetNamedArgument(nameof(VisitorAttribute.VisitMethodName), out string? name) ? name ?? throw new Exception("Visit methode name cannot be null") : DefaultVisitMethodName
                     );
                });
     }
@@ -177,21 +168,16 @@ public class VisitorGenerator : IIncrementalGenerator
                (sc, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
-                   return sc.Attributes.Select(attr =>
-                   {
-                       if (attr.AttributeClass is null)
-                           throw new NullReferenceException("AttributeClass is required");
-                       return (
-                            Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
-                            ImplementationType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required")
-                        );
-                   });
+                   return sc.Attributes.Select(attr => (
+                        Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                        ImplementationType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info")
+                   ));
                }).SelectMany((x, cancellationToken) =>
                {
                    cancellationToken.ThrowIfCancellationRequested();
                    return x.GroupBy(e => new { e.Correlation, e.ImplementationType }).Select(e =>
                    {
-                       return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallBack: false, AddVisitRedirect: false, ImplementationTypes: e.Select(i => i.ImplementationType));
+                       return new AcceptorInfo(e.Key.Correlation, e.Key.ImplementationType, AddVisitFallback: false, AddVisitRedirect: false, ImplementationTypes: e.Select(i => i.ImplementationType));
                    });
                });
     }
@@ -206,11 +192,9 @@ public class VisitorGenerator : IIncrementalGenerator
                {
                    cancellationToken.ThrowIfCancellationRequested();
                    AttributeData attr = sc.Attributes.Single();
-                   if (attr.AttributeClass is null)
-                       throw new NullReferenceException("AttributeClass is required");
                    return new OutputInfo(
-                       sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
-                       ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required")
+                       sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                       ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve argument type info")
                     );
                });
     }
@@ -248,21 +232,16 @@ public class VisitorGenerator : IIncrementalGenerator
                     (sc, cancellationToken) =>
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        return sc.Attributes.Select(attr =>
-                        {
-                            if (attr.AttributeClass is null)
-                                throw new NullReferenceException("AttributeClass is required");
-                            return (
-                                Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
-                                VisitedType: ((INamedTypeSymbol)attr.AttributeClass.TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TypeSymbol name required"),
-                                AssemblyPattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPattern), out string ap) ? ap : sc.TargetSymbol.ContainingAssembly.Name,
-                                TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string tp) ? tp : null,
-                                Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
-                                AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) && a,
-                                AddVisitFallBack: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallBack), out bool f) && f,
-                                AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) && d
-                            );
-                        });
+                        return sc.Attributes.Select(attr => (
+                             Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                             VisitedType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
+                             AssemblyPattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPattern), out string? ap) ? ap : sc.TargetSymbol.ContainingAssembly.Name,
+                             TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string? tp) ? tp : null,
+                             Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
+                             AcceptAll: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AcceptRequireAll), out bool a) && a,
+                             AddVisitFallback: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitFallback), out bool f) && f,
+                             AddVisitRedirect: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AddVisitRedirect), out bool d) && d
+                         ));
                     }).Combine(types).SelectMany((x, cancellationToken) =>
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -277,10 +256,11 @@ public class VisitorGenerator : IIncrementalGenerator
                                          x => string.IsNullOrWhiteSpace(e.AssemblyPattern) || Regex.IsMatch(x.Name, e.AssemblyPattern),
                                          x =>
                                          {
+                                             string? strongName = x.Accept(StrongNameVisitor.Instance);
                                              bool typePatternMatch = string.IsNullOrWhiteSpace(e.TypePattern)
-                                                || Regex.IsMatch(x.Accept(StrongNameVisitor.Instance), e.TypePattern);
+                                                || Regex.IsMatch(strongName, e.TypePattern);
                                              bool subTypeMatch =
-                                                e.VisitedType.TypeFullName != x.Accept(StrongNameVisitor.Instance)
+                                                e.VisitedType.TypeFullName != strongName
                                                 && x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
                                                     || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName);
                                              if (typePatternMatch && subTypeMatch)
@@ -297,13 +277,13 @@ public class VisitorGenerator : IIncrementalGenerator
                                              return false;
                                          });
 
-                                     return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallBack, e.AddVisitRedirect, ImplementationTypes);
+                                     return new AcceptorInfo(e.Correlation, e.VisitedType, e.AddVisitFallback, e.AddVisitRedirect, ImplementationTypes);
                                  });
                              });
                     });
     }
 
-    private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, OutputVisitorInfo)> CombineData(
+    private static IncrementalValuesProvider<OutputVisitorInfo> CombineData(
             IncrementalValuesProvider<VisitorInfo> visitors,
             IncrementalValuesProvider<AcceptorInfo> acceptors,
             IncrementalValuesProvider<AcceptorInfo> autoAcceptor,
@@ -311,8 +291,7 @@ public class VisitorGenerator : IIncrementalGenerator
             IncrementalValuesProvider<GenerateDefaultInfo> defaultGen,
             IncrementalValuesProvider<VisitableInfo> visitable,
             IncrementalValuesProvider<AcceptParamInfo> acceptParams,
-            IncrementalValuesProvider<VisitParamInfo> visitParams,
-            IncrementalValuesProvider<KeyedTemplate> additionalFiles)
+            IncrementalValuesProvider<VisitParamInfo> visitParams)
     {
         return visitors
             .Combine(output.Collect())
@@ -322,19 +301,18 @@ public class VisitorGenerator : IIncrementalGenerator
             .Combine(autoAcceptor.Collect())
             .Combine(acceptParams.Collect())
             .Combine(visitParams.Collect())
-            .Combine(additionalFiles.Collect())
             .Select((data, _) =>
             {
-                ((((((((VisitorInfo Visitor, ImmutableArray<OutputInfo> Output) Left, ImmutableArray<GenerateDefaultInfo> GenerateDefault) Left, ImmutableArray<VisitableInfo> Visitable) Left, ImmutableArray<AcceptorInfo> Acceptors) Left, ImmutableArray<AcceptorInfo> AutoAcceptors) Left, ImmutableArray<AcceptParamInfo> AcceptParam) Left, ImmutableArray<VisitParamInfo> VisitParam) Left, ImmutableArray<KeyedTemplate> Templates) = data;
+                (((((((VisitorInfo Visitor, ImmutableArray<OutputInfo> Output) Left, ImmutableArray<GenerateDefaultInfo> GenerateDefault) Left, ImmutableArray<VisitableInfo> Visitable) Left, ImmutableArray<AcceptorInfo> Acceptors) Left, ImmutableArray<AcceptorInfo> AutoAcceptors) Left, ImmutableArray<AcceptParamInfo> AcceptParam) Left, ImmutableArray<VisitParamInfo> VisitParams) = data;
 
-                VisitorInfo Visitor = Left.Left.Left.Left.Left.Left.Left.Visitor;
-                OutputInfo Output = Left.Left.Left.Left.Left.Left.Left.Output.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                GenerateDefaultInfo GenerateDefault = Left.Left.Left.Left.Left.Left.GenerateDefault.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                VisitableInfo Visitable = Left.Left.Left.Left.Left.Visitable.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                IEnumerable<AcceptorInfo> Acceptors = Left.Left.Left.Left.Acceptors.Where(x => x.Correlation == Visitor.Correlation);
-                IEnumerable<AcceptorInfo> AutoAcceptors = Left.Left.Left.AutoAcceptors.Where(x => x.Correlation == Visitor.Correlation);
-                AcceptParamInfo AcceptParam = Left.Left.AcceptParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
-                VisitParamInfo VisitParam = Left.VisitParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                VisitorInfo Visitor = Left.Left.Left.Left.Left.Left.Visitor;
+                OutputInfo Output = Left.Left.Left.Left.Left.Left.Output.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                GenerateDefaultInfo GenerateDefault = Left.Left.Left.Left.Left.GenerateDefault.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                VisitableInfo Visitable = Left.Left.Left.Left.Visitable.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                IEnumerable<AcceptorInfo> Acceptors = Left.Left.Left.Acceptors.Where(x => x.Correlation == Visitor.Correlation);
+                IEnumerable<AcceptorInfo> AutoAcceptors = Left.Left.AutoAcceptors.Where(x => x.Correlation == Visitor.Correlation);
+                AcceptParamInfo AcceptParam = Left.AcceptParam.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
+                VisitParamInfo VisitParam = VisitParams.FirstOrDefault(x => x.Correlation == Visitor.Correlation);
                 //string Template = Templates.FirstOrDefault(x => x.Key == VisitorTemplateName)?.Template ?? DefaultTemplates.VisitorTemplate;
                 string? returnType = null;
                 bool hasReturnType = false;
@@ -343,34 +321,47 @@ public class VisitorGenerator : IIncrementalGenerator
                     hasReturnType = true;
                     returnType = Output.Output.TypeFullName;
                 }
-                else if (Visitor.Owner.IsGeneric)
+                else
                 {
-                    hasReturnType = (Visitor.Owner.GenericTypes.Any(x => x.IsOut) || Visitor.Owner.GenericTypes.Where(x => x.IsVarianceUnspecified).Count() == 1);
+                    hasReturnType = Visitor.Owner.IsGeneric && (Visitor.Owner.GenericTypes.Any(x => x.IsOut) || Visitor.Owner.GenericTypes.Where(x => x.IsVarianceUnspecified).Count() == 1);
                     returnType = Visitor.Owner.GenericTypes.FirstOrDefault(x => x.IsOut)?.Name ?? Visitor.Owner.GenericTypes.FirstOrDefault(x => x.IsVarianceUnspecified)?.Name;
                 }
                 List<NamedParamInfo> typedArgs = [];
                 if (Visitor.Owner.IsGeneric && Visitor.Owner.GenericTypes.Any(x => x.IsIn))
                 {
-                    typedArgs.AddRange(Visitor.Owner.GenericTypes
-                        .Where(x => x.IsIn)
-                        .Select(x => new NamedParamInfo(x.Name, x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower())));
+                    typedArgs.AddRange(Visitor.Owner.GenericTypes.Where(x => x.IsIn).Select(x => new NamedParamInfo
+                    {
+                        ParamTypeFullName = x.Name,
+                        SanitizedParamName = x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower()
+
+                    }));
                 }
                 if (VisitParam.VisitParamTypes != null && VisitParam.VisitParamTypes.Count() > 0)
                     typedArgs.AddRange(VisitParam.VisitParamTypes.Select(x =>
                     {
-                        return new NamedParamInfo(x.VisitParamType.TypeFullName, x.VisitParamName ?? x.VisitParamType.SanitizeTypeNameAsArg);
+                        return new NamedParamInfo
+                        {
+                            ParamTypeFullName = x.VisitParamType.TypeFullName,
+                            SanitizedParamName = x.VisitParamName ?? x.VisitParamType.SanitizeTypeNameAsArg,
+                        };
                     }));
                 List<NamedParamInfo> accept = [];
                 if (Visitor.Owner.IsGeneric && Visitor.Owner.GenericTypes.Any(x => x.IsIn))
                 {
-                    accept.AddRange(Visitor.Owner.GenericTypes
-                        .Where(x => x.IsIn)
-                        .Select(x => new NamedParamInfo(x.Name, x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower())));
+                    accept.AddRange(Visitor.Owner.GenericTypes.Where(x => x.IsIn).Select(x => new NamedParamInfo
+                    {
+                        ParamTypeFullName = x.Name,
+                        SanitizedParamName = x.Name.StartsWith("T") ? x.Name.Substring(1).ToLower() : x.Name.ToLower()
+
+                    }));
                 }
                 if (AcceptParam.AcceptParamTypes != null && AcceptParam.AcceptParamTypes.Count() > 0)
-                    accept.AddRange(AcceptParam.AcceptParamTypes
-                        .Select(x => new NamedParamInfo(x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg, x.AcceptParamType.TypeFullName)));
-                return (Templates, new OutputVisitorInfo
+                    accept.AddRange(AcceptParam.AcceptParamTypes.Select(x => new NamedParamInfo
+                    {
+                        SanitizedParamName = x.AcceptParamName ?? x.AcceptParamType.SanitizeTypeNameAsArg,
+                        ParamTypeFullName = x.AcceptParamType.TypeFullName,
+                    }));
+                return new OutputVisitorInfo
                 {
                     VisitMethodName = string.IsNullOrWhiteSpace(Visitor.VisitMethodName) ? DefaultVisitMethodName : Visitor.VisitMethodName.Trim(),
                     AccessibilityModifier = Visitor.AccessibilityModifier,
@@ -388,7 +379,7 @@ public class VisitorGenerator : IIncrementalGenerator
                     ImplementationGroup = [.. Acceptors.Union(AutoAcceptors).Select(x => new ImplGroup
                     {
                         VisitedType = x.VisitedType,
-                        AddVisitFallBack = x.AddVisitFallBack,
+                        AddVisitFallback = x.AddVisitFallback,
                         AddVisitRedirect = x.AddVisitRedirect,
                         ImplementationTypes = [.. x.ImplementationTypes],
                     })],
@@ -408,17 +399,17 @@ public class VisitorGenerator : IIncrementalGenerator
                         GenerateVisitable = Visitable != default,
                         AcceptMethodName = string.IsNullOrWhiteSpace(Visitable.AcceptMethodName) ? DefaultAcceptMethodName : Visitable.AcceptMethodName.Trim(),
                     }
-                });
+                };
             });
     }
-}
 
-internal record struct VisitorInfo(string Correlation, TargetTypeInfo Owner, string Keyword, string AccessibilityModifier, bool IsAsync, string VisitMethodName) { }
-internal record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
-    , bool AddVisitFallBack, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
-{ }
-internal record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
-internal record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string? VisitParamName)> VisitParamTypes) { }
-internal record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }
-internal record struct VisitableInfo(string Correlation, string AcceptMethodName) { }
-internal record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string? AcceptParamName)> AcceptParamTypes) { }
+    private record struct VisitorInfo(string Correlation, TargetTypeInfo Owner, string Keyword, string AccessibilityModifier, bool IsAsync, string VisitMethodName) { }
+    private record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
+        , bool AddVisitFallback, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
+    { }
+    private record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
+    private record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string? VisitParamName)> VisitParamTypes) { }
+    private record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }
+    private record struct VisitableInfo(string Correlation, string AcceptMethodName) { }
+    private record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string? AcceptParamName)> AcceptParamTypes) { }
+}

@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
-namespace Condor.Constants.Generator;
+namespace Condor.Files.Generator;
 
 [Generator]
 public class TemplatedFilesGenerator : IIncrementalGenerator
@@ -17,24 +17,25 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
 
         IncrementalValuesProvider<IntermediateInfo> visitors = GetFilesInfo(context);
         IncrementalValuesProvider<AddonsIntermediateInfo> addons = GetAddonsFilesInfo(context);
-        IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, TemplatedFilesInfo)> combine = CombineData(visitors, addons, additionalFiles);
+        IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, TemplatedFileInfoCollection)> combine = CombineData(visitors, addons, additionalFiles);
 
         context.RegisterSourceOutput(combine, (ctx, data) =>
         {
             ImmutableArray<KeyedTemplate> templates = data.Item1;
-            TemplatedFilesInfo template_datas = data.Item2;
+            TemplatedFileInfoCollection template_datas = data.Item2;
 
             string sourceName = string.Join(".", template_datas.ClassName.SanitizeToHintName(), template_datas.TemplateName, "generated");
             try
             {
                 TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                    .WithTemplates(templates).Build();
-                string template = templates.FirstOrDefault(x => x.Key == template_datas.TemplateName)?.Template;
-                if (!string.IsNullOrEmpty(template))
-                {
-                    string result = templateProcessor.Render(template, template_datas);
-                    ctx.AddSource(sourceName, result);
-                }
+                    .WithAccessors(x => x
+                    .AddDefaultsAccessors()
+                    .CreateMemberObjectAccessor<TemplatedFileInfo>(TemplatedFileInfoAccessor.GetNamedProperty)
+                    .CreateMemberObjectAccessor<TemplatedFileInfoCollection>(TemplatedFileInfoCollectionAccessor.GetNamedProperty)
+                )
+                .WithTemplates(templates).Build();
+                string result = templateProcessor.Render(template_datas.TemplateName, template_datas);
+                ctx.AddSource(sourceName, result);
             }
             catch (Exception ex)
             {
@@ -53,7 +54,7 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
                         return new AddonsIntermediateInfo(text.Path, new TemplatedFileInfo
                         {
                             FileName = Path.GetFileNameWithoutExtension(text.Path),
-                            FileContent = text.GetText(cancellationToken)?.ToString()
+                            FileContent = text.GetText(cancellationToken)?.ToString() ?? throw new Exception("Additional file content is empty")
                         });
                     });
     }
@@ -71,9 +72,9 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
                    foreach (AttributeData attr in sc.Attributes)
                    {
                        files.Add(new IntermediateInfo(
-                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
-                           attr.ConstructorArguments[0].Value?.ToString(),
-                           attr.ConstructorArguments[1].Value?.ToString()
+                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"),
+                           attr.ConstructorArguments[0].Value?.ToString() ?? throw new Exception("Template is required"),
+                           attr.ConstructorArguments[1].Value?.ToString() ?? throw new Exception("File pattern is required")
                         ));
                    }
                    return files;
@@ -81,7 +82,7 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
     }
 
 
-    private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, TemplatedFilesInfo)> CombineData(
+    private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, TemplatedFileInfoCollection)> CombineData(
             IncrementalValuesProvider<IntermediateInfo> visitors,
             IncrementalValuesProvider<AddonsIntermediateInfo> addons,
             IncrementalValuesProvider<KeyedTemplate> additionalFiles)
@@ -94,13 +95,13 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
                 ImmutableArray<KeyedTemplate> templates = x.Left.Right;
                 IntermediateInfo intermediate = x.Left.Left;
                 ImmutableArray<AddonsIntermediateInfo> addons = x.Right;
-                return (templates, new TemplatedFilesInfo
+                return (templates, new TemplatedFileInfoCollection
                 {
                     ClassName = intermediate.Owner.TypeName,
                     OutputNamespace = intermediate.Owner.ContainingNamespace,
                     TemplateName = intermediate.TemplateName,
                     Type = intermediate.Owner,
-                    Files = addons.Where(x => Regex.IsMatch(x.Path, intermediate.Pattern)).Select(x => x.File).ToArray(),
+                    Files = [.. addons.Where(x => Regex.IsMatch(x.Path, intermediate.Pattern)).Select(x => x.File)],
                 });
             });
     }

@@ -1,4 +1,7 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Condor.Visitor.Generator.Abstractions;
 
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-public class OutputAttribute<T> : Attribute { }
+[ExcludeFromCodeCoverage]
+public sealed class OutputAttribute<T> : Attribute { }

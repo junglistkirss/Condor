@@ -12,27 +12,25 @@ public sealed class AttributesVisitor : SymbolVisitor<AttributeInfo[]>
         List<AttributeInfo> all = [];
         for (int i = 0; i < datas.Length; i++)
         {
-            var attr = datas[i];
-            if (attr.AttributeClass is not null)
-                all.Add(new AttributeInfo
+            all.Add(new AttributeInfo
+            {
+                AttributeType = (datas[i].AttributeClass ?? throw new Exception("Attribute class is required")).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
+                Constructor = datas[i].AttributeConstructor?.Accept(ActionVisitor.Instance) ?? throw new Exception("Unable to resolve constructor info"),
+                ConstructorArguments = [.. datas[i].ConstructorArguments.Select(x => new ArgumentInfo
                 {
-                    AttributeType = attr.AttributeClass.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetType required"),
-                    Constructor = attr.AttributeConstructor?.Accept(ActionVisitor.Instance),
-                    ConstructorArguments = [.. attr.ConstructorArguments.Select(x => new ArgumentInfo
-                    {
-                        ArgumentName = null,
-                        ArgumentValue = x.Kind == TypedConstantKind.Array ? x.Values : x.Value,
-                        IsNull = x.IsNull,
-                        ArgumentType = x.Type?.Accept(TargetTypeVisitor.Instance),
-                    })],
-                    NamedArguments = [.. attr.NamedArguments.Select(x => new ArgumentInfo
-                    {
-                        ArgumentName = x.Key,
-                        ArgumentValue = x.Value,
-                        IsNull = false,
-                        ArgumentType = null,
-                    })],
-                });
+                    ArgumentName = null,
+                    ArgumentValue = x.Kind == TypedConstantKind.Array ? x.Values : x.Value,
+                    IsNull = x.IsNull,
+                    ArgumentType = x.Type?.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve argument type info"),
+                })],
+                NamedArguments = [.. datas[i].NamedArguments.Select(x => new ArgumentInfo
+                {
+                    ArgumentName = x.Key,
+                    ArgumentValue = x.Value,
+                    IsNull = false,
+                    ArgumentType = null,
+                })],
+            });
         }
 
         return [.. all];

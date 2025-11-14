@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
+﻿using RobinMustache.Generators.Accessor;
+using System.Diagnostics;
 
 namespace Condor.Generator.Utils;
 
 [DebuggerDisplay("{MemberName}")]
-public record class MemberInfo
+[GenerateAccessor]
+public sealed record class MemberInfo
 {
     public string MemberName { get; internal set; } = default!;
     public bool IsConstant { get; internal set; }

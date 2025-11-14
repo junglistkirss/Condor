@@ -1,7 +1,10 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Condor.Visitor.Generator.Abstractions;
 
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-public class GenerateVisitableAttribute : Attribute
+[ExcludeFromCodeCoverage]
+public sealed class GenerateVisitableAttribute : Attribute
 {
     public string? AcceptMethodName { get; set; } = null;
 }

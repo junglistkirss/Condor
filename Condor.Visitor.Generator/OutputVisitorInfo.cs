@@ -1,10 +1,13 @@
-﻿using Condor.Generator.Utils;
+﻿using RobinMustache.Generators.Accessor;
 
 namespace Condor.Visitor.Generator;
 
-
-internal record class OutputVisitorInfo : GeneratedTypeInfo
+[GenerateAccessor]
+internal record class OutputVisitorInfo
 {
+    public string OutputNamespace { get; internal set; } = default!;
+    public string ClassName { get; internal set; } = default!;
+
     public string VisitMethodName { get; internal set; } = default!;
     public string AccessibilityModifier { get; internal set; } = default!;
     public string KeywordTypeDefinition { get; internal set; } = default!;
@@ -23,5 +26,4 @@ internal record class OutputVisitorInfo : GeneratedTypeInfo
     public bool HasReturnType { get; internal set; }
     public string? ReturnType { get; internal set; }
     public bool HasArgs { get; internal set; }
-
 }

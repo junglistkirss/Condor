@@ -2,7 +2,13 @@
 
 public record KeyedTemplate
 {
-    public string Key { get; set; } = default!;
-    public string Template { get; set; } = default!;
+    public KeyedTemplate(string key, string template)
+    {
+        Key = key;
+        Template = template;
+    }
+
+    public string Key { get; }
+    public string Template { get; }
 
 }

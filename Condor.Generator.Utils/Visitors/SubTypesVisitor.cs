@@ -23,7 +23,7 @@ public class BaseTypesVisitor : SymbolVisitor<INamedTypeSymbol[]>
     public override INamedTypeSymbol[] VisitNamedType(INamedTypeSymbol symbol)
     {
         if (symbol.BaseType is not null)
-            return [symbol.BaseType, .. symbol.BaseType.Accept(Instance) ?? throw new NullReferenceException("NamedTypeSymbol required")];
+            return [symbol.BaseType, .. symbol.BaseType.Accept(Instance) ?? throw new Exception("Unable to resolve base type info")];
         return [];
     }
 }

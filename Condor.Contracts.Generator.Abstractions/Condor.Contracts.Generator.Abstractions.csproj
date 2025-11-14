@@ -5,11 +5,11 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageId>Condor.Contracts.Generator.Abstractions</PackageId>
-    <Version>2.0.0</Version>
+    <Version>0.0.1</Version>
     <Authors>Christian Bourbier</Authors>
-    <Company>Christian Bourbier</Company>
     <PackageDescription>Attributes to instruct code generation for Contracts pattern</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>

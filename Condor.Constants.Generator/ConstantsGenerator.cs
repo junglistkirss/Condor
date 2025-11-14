@@ -16,24 +16,27 @@ public class ConstantsGenerator : IIncrementalGenerator
         IncrementalValuesProvider<KeyedTemplate> additionalFiles = context.GetTemplates();
 
         IncrementalValuesProvider<ConstsOwnerInfo> visitors = GetConstantsInfo(context);
-        IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantsInfo)> combine = CombineData(visitors, additionalFiles);
+        IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantInfoCollection)> combine = CombineData(visitors, additionalFiles);
 
         context.RegisterSourceOutput(combine, (ctx, data) =>
         {
             ImmutableArray<KeyedTemplate> templates = data.Item1;
-            ConstantsInfo template_datas = data.Item2;
+            ConstantInfoCollection template_datas = data.Item2;
 
             string sourceName = string.Join(".", template_datas.ClassName.SanitizeToHintName(), template_datas.TemplateName, "generated");
             try
             {
                 TemplateProcessor templateProcessor = new TemplateProcessorBuilder()
-                    .WithTemplates(templates).Build();
-                string? template = templates.FirstOrDefault(x => x.Key == template_datas.TemplateName)?.Template;
-                if (!string.IsNullOrEmpty(template))
-                {
-                    string result = templateProcessor.Render(template!, template_datas);
-                    ctx.AddSource(sourceName, result);
-                }
+                    .WithAccessors(x => x
+                        .AddDefaultsAccessors()
+                        .CreateMemberObjectAccessor<ConstantInfo>(ConstantInfoAccessor.GetNamedProperty)
+                        .CreateMemberObjectAccessor<ConstantInfoCollection>(ConstantInfoCollectionAccessor.GetNamedProperty)
+                    )
+                    .WithTemplates(templates)
+                    .Build();
+                string result = templateProcessor.Render(template_datas.TemplateName, template_datas);
+                ctx.AddSource(sourceName, result);
+
             }
             catch (Exception ex)
             {
@@ -54,21 +57,21 @@ public class ConstantsGenerator : IIncrementalGenerator
                    List<ConstsOwnerInfo> consts = [];
                    foreach (AttributeData attr in sc.Attributes)
                    {
-                       var members = sc.TargetSymbol
+                       ConstInfo[] members = [..
+                           sc.TargetSymbol
                             .Accept(MembersVisitor<IFieldSymbol>.Instance)
                             .Where(x => x.IsConstant)
                             .Select(x =>
                             {
-                                string[] partials = [.. x.Attributes
-                                    .Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName)
-                                    .Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString() ?? throw new NullReferenceException("Missing argument value"))];
+                                string[] partials = [.. x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString() ?? throw new Exception("Template key is required"))];
                                 return new ConstInfo(x, partials ?? []);
-                            }).ToArray();
+                            })
+                       ];
 
                        consts.Add(new ConstsOwnerInfo(
-                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol name required"),
-                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new NullReferenceException("TargetSymbol type required"),
-                           attr.ConstructorArguments[0].Value?.ToString() ?? throw new NullReferenceException("Missing argument value"),
+                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"),
+                           attr.ConstructorArguments[0].Value?.ToString() ?? throw new Exception("Template key is required"),
                            members
                         ));
                    }
@@ -77,7 +80,7 @@ public class ConstantsGenerator : IIncrementalGenerator
     }
 
 
-    private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantsInfo)> CombineData(
+    private static IncrementalValuesProvider<(ImmutableArray<KeyedTemplate>, ConstantInfoCollection)> CombineData(
             IncrementalValuesProvider<ConstsOwnerInfo> consts,
             IncrementalValuesProvider<KeyedTemplate> additionalFiles)
     {
@@ -85,13 +88,17 @@ public class ConstantsGenerator : IIncrementalGenerator
             .Combine(additionalFiles.Collect())
             .Select((data, _) =>
             {
-                return (data.Right, new ConstantsInfo
+                return (data.Right, new ConstantInfoCollection
                 {
                     ClassName = data.Left.Owner.TypeName,
                     ConstantType = data.Left.Owner,
                     TemplateName = data.Left.Template,
                     OutputNamespace = data.Left.Owner.ContainingNamespace,
-                    Map = [.. data.Left.Consts.Select(x => new ConstantInfo(x.Member, x.Partials))]
+                    Map = [.. data.Left.Consts.Select(x => new ConstantInfo
+                    {
+                        Member = x.Member,
+                        Partials = x.Partials,
+                    })]
                 });
             });
     }
