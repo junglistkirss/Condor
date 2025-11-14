@@ -25,10 +25,10 @@ public class FindTypesGenerator : IIncrementalGenerator
                 {
                     return new TypeFinderInfo
                     {
-                        TypeContraint = x.AttributeClass.TypeArguments.Single().Accept(TargetTypeVisitor.Instance),
-                        AssemblyContraint = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.AssemblyContraint), out string s) ? s : null,
+                        TypeContraint = (x.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single().Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute constraint type info"),
+                        AssemblyContraint = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.AssemblyContraint), out string? s) ? s : null,
                         AssemblyName = sc.TargetSymbol.Name,
-                        TemplateKey = x.ConstructorArguments.Single().Value.ToString(),
+                        TemplateKey = x.ConstructorArguments.Single().Value?.ToString() ?? throw new Exception("Template key is required"),
                         IsRecord = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsRecord), out bool r) ? r : null,
                         IsGeneric = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsGeneric), out bool g) ? g : null,
                         IsAbstract = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.IsAbstract), out bool a) ? a : null,

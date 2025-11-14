@@ -8,7 +8,7 @@ internal record struct TypeFinderInfo
     public string TypeNamespaceName { get; internal set; }
 
 
-    public string AssemblyContraint { get; internal set; }
+    public string? AssemblyContraint { get; internal set; }
     public TargetTypeInfo TypeContraint { get; internal set; }
     public bool? IsRecord { get; internal set; }
     public bool? IsGeneric { get; internal set; }

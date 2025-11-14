@@ -63,15 +63,15 @@ public class ConstantsGenerator : IIncrementalGenerator
                             .Where(x => x.IsConstant)
                             .Select(x =>
                             {
-                                string[] partials = [.. x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString())];
+                                string[] partials = [.. x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString() ?? throw new Exception("Template key is required"))];
                                 return new ConstInfo(x, partials ?? []);
                             })
                        ];
 
                        consts.Add(new ConstsOwnerInfo(
-                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance),
-                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance),
-                           attr.ConstructorArguments[0].Value?.ToString(),
+                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"),
+                           attr.ConstructorArguments[0].Value?.ToString() ?? throw new Exception("Template key is required"),
                            members
                         ));
                    }

@@ -6,6 +6,6 @@ namespace Condor.Constants.Generator;
 [GenerateAccessor]
 internal record ConstantInfo
 {
-    public MemberInfo Member { get; internal set; }
-    public string[] Partials { get; internal set; }
+    public MemberInfo Member { get; internal set; } = default!;
+    public string[] Partials { get; internal set; } = [];
 }

@@ -3,10 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsRoslynComponent>true</IsRoslynComponent>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>  <!--Debug--> 
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>  <!--Debug-->
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <PackageId>Condor.Visitor.Generator</PackageId>
     <Version>0.0.1</Version>

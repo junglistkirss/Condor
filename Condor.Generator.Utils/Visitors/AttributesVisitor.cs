@@ -11,19 +11,19 @@ public sealed class AttributesVisitor : SymbolVisitor<AttributeInfo[]>
 
     private static AttributeInfo[] GetAttributeInfos(ImmutableArray<AttributeData> datas)
     {
-        List<AttributeInfo> all = new();
+        List<AttributeInfo> all = [];
         for (int i = 0; i < datas.Length; i++)
         {
             all.Add(new AttributeInfo
             {
-                AttributeType = datas[i].AttributeClass.Accept(TargetTypeVisitor.Instance),
-                Constructor = datas[i].AttributeConstructor?.Accept(ActionVisitor.Instance),
+                AttributeType = (datas[i].AttributeClass ?? throw new Exception("Attribute class is required")).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
+                Constructor = datas[i].AttributeConstructor?.Accept(ActionVisitor.Instance) ?? throw new Exception("Unable to resolve constructor info"),
                 ConstructorArguments = [.. datas[i].ConstructorArguments.Select(x => new ArgumentInfo
                 {
                     ArgumentName = null,
                     ArgumentValue = x.Kind == TypedConstantKind.Array ? x.Values : x.Value,
                     IsNull = x.IsNull,
-                    ArgumentType = x.Type?.Accept(TargetTypeVisitor.Instance),
+                    ArgumentType = x.Type?.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve argument type info"),
                 })],
                 NamedArguments = [.. datas[i].NamedArguments.Select(x => new ArgumentInfo
                 {

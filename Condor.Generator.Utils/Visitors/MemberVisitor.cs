@@ -13,8 +13,8 @@ public sealed class MemberVisitor : SymbolVisitor<MemberInfo>
             IsConstant = symbol.HasConstantValue,
             IsNullable = symbol.NullableAnnotation == NullableAnnotation.Annotated,
             MemberName = symbol.Name,
-            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance),
-            Attributes = symbol.Accept(AttributesVisitor.Instance),
+            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve member type info"),
+            Attributes = symbol.Accept(AttributesVisitor.Instance) ?? throw new Exception("Unable to resolve attributes info"),
         };
     }
     public override MemberInfo VisitProperty(IPropertySymbol symbol)
@@ -24,8 +24,8 @@ public sealed class MemberVisitor : SymbolVisitor<MemberInfo>
             IsConstant = false,
             IsNullable = symbol.NullableAnnotation == NullableAnnotation.Annotated,
             MemberName = symbol.Name,
-            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance),
-            Attributes = symbol.Accept(AttributesVisitor.Instance),
+            MemberType = symbol.Type.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve member type info"),
+            Attributes = symbol.Accept(AttributesVisitor.Instance) ?? throw new Exception("Unable to resolve attributes info"),
         };
     }
 }

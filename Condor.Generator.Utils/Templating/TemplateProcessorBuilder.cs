@@ -8,9 +8,9 @@ namespace Condor.Generator.Utils.Templating;
 
 public class TemplateProcessorBuilder
 {
-    private Action<StaticDataFacadeResolverBuilder> facades = null;
-    private Action<StaticAccessorBuilder> accessors = null;
-    private Action<Helper> helpers = null;
+    private Action<StaticDataFacadeResolverBuilder>? facades = null;
+    private Action<StaticAccessorBuilder>? accessors = null;
+    private Action<Helper>? helpers = null;
 
     private readonly List<KeyedTemplate> templates = [];
     public TemplateProcessorBuilder WithFacades(Action<StaticDataFacadeResolverBuilder> facades)

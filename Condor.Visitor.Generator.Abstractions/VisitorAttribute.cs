@@ -6,5 +6,5 @@ namespace Condor.Visitor.Generator.Abstractions;
 public class VisitorAttribute : Attribute
 {
     public bool IsAsync { get; set; } = false;
-    public string VisitMethodName { get; set; } = null;
+    public string? VisitMethodName { get; set; } = null;
 }

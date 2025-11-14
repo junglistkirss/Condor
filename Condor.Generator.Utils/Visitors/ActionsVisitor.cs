@@ -29,6 +29,6 @@ public sealed class ActionsVisitor : SymbolVisitor<ActionInfo[]>
 
     public override ActionInfo[] VisitNamedType(INamedTypeSymbol symbol)
     {
-        return [.. symbol.GetMembers().OfType<IMethodSymbol>().Select(x => x.Accept(ActionVisitor.Instance))];
+        return [.. symbol.GetMembers().OfType<IMethodSymbol>().Select(x => x.Accept(ActionVisitor.Instance) ?? throw new Exception("Unable to resolve action info"))];
     }
 }
