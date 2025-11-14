@@ -1,1 +1,1 @@
-# Condor.Contracts.Generator.Abstractions
+# Condor.Files.Generator
