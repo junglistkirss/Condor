@@ -1,13 +1,10 @@
-﻿namespace Condor.Visitor.Generator;
+﻿using Condor.Generator.Utils;
 
-internal record class NamedParamInfo
+namespace Condor.Visitor.Generator
 {
-    public NamedParamInfo(string paramTypeFullName, string sanitizedParamName)
+    internal record class NamedParamInfo
     {
-        ParamTypeFullName = paramTypeFullName;
-        SanitizedParamName = sanitizedParamName;
+        public string ParamTypeFullName { get; internal set; }
+        public string SanitizedParamName { get; internal set; }
     }
-
-    public string ParamTypeFullName { get; }
-    public string SanitizedParamName { get; }
 }

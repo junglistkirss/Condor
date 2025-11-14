@@ -1,8 +1,12 @@
-﻿namespace Condor.Constants.Generator.Abstractions;
+﻿using System;
+using System.Transactions;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
-public class ConstantsAttribute(string template) : Attribute
+namespace Condor.Constants.Generator.Abstractions
 {
-    public string Template { get; } = template;
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
+    public class ConstantsAttribute(string template) : Attribute
+    {
+        public string Template { get; } = template;
 
+    }
 }

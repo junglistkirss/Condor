@@ -1,10 +1,11 @@
 ﻿using Condor.Generator.Utils;
 
-namespace Condor.Constants.Generator;
-
-internal record ConstantsInfo : GeneratedTypeInfo
+namespace Condor.Constants.Generator
 {
-    public string TemplateName { get; internal set; } = default!;
-    public TargetTypeInfo ConstantType { get; internal set; } = default!;
-    public ConstantInfo[] Map { get; internal set; } = [];
+    internal record ConstantsInfo : GeneratedTypeInfo
+    {
+        public string TemplateName { get; internal set; }
+        public TargetTypeInfo ConstantType { get; internal set; }
+        public ConstantInfo[] Map { get; internal set; }
+    }
 }

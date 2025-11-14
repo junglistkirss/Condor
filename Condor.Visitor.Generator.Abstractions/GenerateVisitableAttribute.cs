@@ -1,7 +1,11 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System;
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-public class GenerateVisitableAttribute : Attribute
+namespace Condor.Visitor.Generator.Abstractions
 {
-    public string? AcceptMethodName { get; set; } = null;
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    public class GenerateVisitableAttribute : Attribute
+    {
+        public string AcceptMethodName { get; set; } = null;
+    }
+
 }

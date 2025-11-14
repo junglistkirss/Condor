@@ -1,8 +1,12 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System;
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-public class GenerateDefaultAttribute : Attribute
+namespace Condor.Visitor.Generator.Abstractions
 {
-    public OptionsDefault Options { get; set; } = OptionsDefault.None;
-    public VisitOptions VisitOptions { get; set; } = VisitOptions.AbstractVisit;
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    public class GenerateDefaultAttribute : Attribute
+    {
+        public OptionsDefault Options { get; set; } = OptionsDefault.None;
+        public VisitOptions VisitOptions { get; set; } = VisitOptions.AbstractVisit;
+    }
+
 }

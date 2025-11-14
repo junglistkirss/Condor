@@ -1,7 +1,9 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
-
-public enum VisitOptions
+﻿namespace Condor.Visitor.Generator.Abstractions
 {
-    AbstractVisit,
-    UseVisitFallBack,
+    public enum VisitOptions
+    {
+        AbstractVisit,
+        UseVisitFallBack,
+    }
+
 }

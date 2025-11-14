@@ -1,6 +1,10 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System;
 
-public abstract class BaseParamAttribute<TParamType> : Attribute
+namespace Condor.Visitor.Generator.Abstractions
 {
-    public string? ParamName { get; set; } = null;
+    public abstract class BaseParamAttribute<TParamType> : Attribute
+    {
+        public string ParamName { get; set; } = null;
+    }
+
 }

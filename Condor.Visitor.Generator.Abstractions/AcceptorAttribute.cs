@@ -1,4 +1,8 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System;
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
-public class AcceptorAttribute<T> : Attribute { }
+namespace Condor.Visitor.Generator.Abstractions
+{
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
+    public class AcceptorAttribute<T> : Attribute { }
+
+}

@@ -1,15 +1,16 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Condor.Generator.Utils.Visitors;
-
-public sealed class StrongNameVisitor : SymbolVisitor<string>
+namespace Condor.Generator.Utils.Visitors
 {
-    public static readonly StrongNameVisitor Instance = new();
-
-    public override string VisitNamedType(INamedTypeSymbol x)
+    public sealed class StrongNameVisitor : SymbolVisitor<string>
     {
-        return x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat
-                .WithMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.ExpandNullable)
-                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
+        public static readonly StrongNameVisitor Instance = new();
+
+        public override string VisitNamedType(INamedTypeSymbol x)
+        {
+            return x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat
+                    .WithMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.ExpandNullable)
+                    .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
+        }
     }
 }

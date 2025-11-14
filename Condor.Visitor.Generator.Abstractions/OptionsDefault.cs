@@ -1,12 +1,16 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System;
 
-[Flags]
-public enum OptionsDefault
+namespace Condor.Visitor.Generator.Abstractions
 {
-    None = 0,
-    IsPartial = 1,
-    IsAbstract = 1 << 1,
-    ForcePublic = 1 << 2,
-    All = IsPartial | IsAbstract | ForcePublic,
-    AsbtractPartial = IsPartial | IsAbstract,
+    [Flags]
+    public enum OptionsDefault
+    {
+        None = 0,
+        IsPartial = 1,
+        IsAbstract = 1 << 1,
+        ForcePublic = 1 << 2,
+        All = IsPartial | IsAbstract | ForcePublic,
+        AsbtractPartial = IsPartial | IsAbstract,
+    }
+
 }

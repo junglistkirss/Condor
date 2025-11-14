@@ -1,9 +1,10 @@
 ﻿using Condor.Generator.Utils;
 
-namespace Condor.Contracts.Generator;
-
-internal record class OutputTypeInfo : GeneratedTypeInfo
+namespace Condor.Contracts.Generator
 {
-    public TargetTypeInfo BaseType { get; internal set; } = default!;
-    public TargetTypeInfo[] Map { get; internal set; } = [];
+    internal record class OutputTypeInfo : GeneratedTypeInfo
+    {
+        public TargetTypeInfo BaseType { get; set; }
+        public TargetTypeInfo[] Map { get; set; }
+    }
 }

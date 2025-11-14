@@ -1,7 +1,10 @@
-﻿namespace Condor.Constants.Generator;
+﻿using System;
 
-internal record TemplatedFileInfo
+namespace Condor.Constants.Generator
 {
-    public string FileName { get; internal set; }
-    public string FileContent { get; internal set; }
+    internal record TemplatedFileInfo
+    {
+        public string FileName { get; internal set; }
+        public string FileContent { get; internal set; }
+    }
 }

@@ -1,8 +1,12 @@
-﻿namespace Condor.Visitor.Generator.Abstractions;
+﻿using System;
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-public class VisitorAttribute : Attribute
+namespace Condor.Visitor.Generator.Abstractions
 {
-    public bool IsAsync { get; set; } = false;
-    public string? VisitMethodName { get; set; } = null;
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    public class VisitorAttribute : Attribute
+    {
+        public bool IsAsync { get; set; } = false;
+        public string VisitMethodName { get; set; } = null;
+    }
+
 }
