@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Condor.Visitor.Generator.Abstractions;
 
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
-public class VisitParamAttribute<TArg> : BaseParamAttribute<TArg> { }
+[ExcludeFromCodeCoverage]
+public sealed class VisitParamAttribute<TArg> : BaseParamAttribute<TArg> { }
