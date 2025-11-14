@@ -1,18 +1,19 @@
-﻿using System.Diagnostics;
+﻿using RobinMustache.Generators.Accessor;
+using System.Diagnostics;
 
-namespace Condor.Generator.Utils
+namespace Condor.Generator.Utils;
+
+[DebuggerDisplay("{Definition}")]
+[GenerateAccessor]
+public sealed record class ActionInfo
 {
-    [DebuggerDisplay("{Definition}")]
-    public record class ActionInfo
-    {
-        public bool IsStatic { get; internal set; }
-        public string Name { get; internal set; }
-        public string Definition { get; internal set; }
-        public TargetTypeInfo ReturnType { get; internal set; }
-        public TargetTypeInfo[] TypeArguments { get; internal set; }
-        public ParameterInfo[] Parameters { get; internal set; }
-        public AttributeInfo[] Attributes { get; internal set; }
-        public string AccessibilityModifier { get; internal set; }
-        public bool IsVoid { get; internal set; }
-    }
+    public bool IsStatic { get; internal set; }
+    public string Name { get; internal set; } = default!;
+    public string Definition { get; internal set; } = default!;
+    public TargetTypeInfo ReturnType { get; internal set; } = default!;
+    public TargetTypeInfo[] TypeArguments { get; internal set; } = [];
+    public ParameterInfo[] Parameters { get; internal set; } = [];
+    public AttributeInfo[] Attributes { get; internal set; } = [];
+    public string AccessibilityModifier { get; internal set; } = default!;
+    public bool IsVoid { get; internal set; }
 }

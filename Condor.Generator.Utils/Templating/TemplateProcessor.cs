@@ -1,22 +1,31 @@
-﻿using HandlebarsDotNet;
+﻿using RobinMustache;
+using RobinMustache.Abstractions.Nodes;
 using System;
-using System.Text;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
-namespace Condor.Generator.Utils.Templating
+namespace Condor.Generator.Utils.Templating;
+
+
+public class TemplateProcessor
 {
+    private readonly IStringRenderer renderer;
+    private readonly Dictionary<string, ImmutableArray<INode>> templates = [];
 
-    public class TemplateProcessor
+    internal TemplateProcessor(IStringRenderer renderer)
     {
-        private readonly IHandlebars renderer;
+        this.renderer = renderer;
+    }
+    public string Render<T>(string templateKey, T datas)
+    {
+        if (!templates.TryGetValue(templateKey, out ImmutableArray<INode> template))
+            throw new InvalidOperationException($"Template {templateKey} is missing");
+        return renderer.Render(template, datas);
 
-        internal TemplateProcessor(IHandlebars renderer)
-        {
-            this.renderer = renderer;
-        }
-        public string Render<T>(string template, T datas)
-        {
-            return renderer.Compile(template)(datas);
-
-        }
+    }
+    internal void RegisterTemplate(string key, string template)
+    {
+        ImmutableArray<INode> compiledTemplate = template.AsSpan().Parse();
+        templates.Add(key, compiledTemplate);
     }
 }

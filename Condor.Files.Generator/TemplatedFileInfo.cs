@@ -1,10 +1,10 @@
-﻿using System;
+﻿using RobinMustache.Generators.Accessor;
 
-namespace Condor.Constants.Generator
+namespace Condor.Files.Generator;
+
+[GenerateAccessor]
+internal record TemplatedFileInfo
 {
-    internal record TemplatedFileInfo
-    {
-        public string FileName { get; internal set; }
-        public string FileContent { get; internal set; }
-    }
+    public string FileName { get; internal set; } = default!;
+    public string FileContent { get; internal set; } = default!;
 }

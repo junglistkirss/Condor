@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Debug on Condor.Core": {
-      "commandName": "DebugRoslynComponent",
-      "targetProject": "..\\..\\..\\Condor.Core\\Condor.Core.csproj"
-    }
-  }
-}

@@ -1,75 +1,83 @@
-using System.Collections.Immutable;
 using Condor.Constants.Generator;
 using Condor.Constants.Generator.Abstractions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using System.Collections.Immutable;
 
 namespace GeneratorsTestProject;
 
 
 public class ConstantsGeneratorTests
 {
-    [Fact(Skip = "Should be more complex to ensure unit tests")]
+    [Fact]
     public void Constants_auto_interface_filter()
     {
         // Arrange
-        var source = @"
+        string source = @"
 using Condor.Constants.Generator.Abstractions;
 
 namespace TestNamespace
 {
     [Constants(""template"")]
-    public class TestConstants
+    public partial class TestConstants
     {    
         public const string test = ""test"";
+        public const string test2 = ""test"";
+        public const string test3 = ""test"";
     }
 }";
+        StringAdditionalText template = new("template.mustache", @"namespace {{OutputNamespace}}
+{
+    public static partial class {{ClassName}}
+    {
+        public static IEnumerable<string> GetAll()
+        {
+            {{#Map}}
+            yield return {{{Member.MemberName}}};
+            {{/Map}}
+        }
+    }
+}");
+        string code = GenerateCode(source, out Diagnostic[] diagnostics, template);
+        Assert.Empty(diagnostics);
+        Assert.Contains("namespace TestNamespace", code);
+        Assert.Contains("public static partial class TestConstants", code);
+        Assert.Contains("yield return test;", code);
+        Assert.Contains("yield return test2;", code);
+        Assert.Contains("yield return test3;", code);
 
-        var compilation = CreateCompilation(source);
-        var generator = new ConstantsGenerator();
+    }
+
+
+    private static string GenerateCode(string source, out Diagnostic[] diagnostics, params StringAdditionalText[] additionalTexts)
+    {
+        Compilation compilation = CSharpCompilation.Create(
+            "TestNamespace",
+            syntaxTrees: [CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest))],
+            references: [
+                .. Basic.Reference.Assemblies.NetStandard20.References.All,
+                MetadataReference.CreateFromFile(typeof(ConstantAttribute).Assembly.Location),
+            ],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        ConstantsGenerator generator = new();
         // Act
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator)
-            .AddAdditionalTexts([new StringAdditionalText("template.mustache","namespace Test { }")]);
-        driver = driver.RunGenerators(compilation);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [GeneratorExtensions.AsSourceGenerator(generator)],
+            parseOptions: new CSharpParseOptions(LanguageVersion.LatestMajor)
+        );
+        if (additionalTexts.Length > 0)
+            driver = driver.AddAdditionalTexts([.. additionalTexts]);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation? _, out ImmutableArray<Diagnostic> compilationDiagnostics);
         // Assert
         SyntaxTree result = Assert.Single(driver.GetRunResult().GeneratedTrees);
-        Assert.Contains("namespace Test { }", result.ToString());
-
+        diagnostics = [.. compilationDiagnostics];
+        return result.ToString();
     }
 
-    private static Compilation CreateCompilation(string source)
+    public class StringAdditionalText(string path, string inline) : AdditionalText
     {
-        var o = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES");
-        //Assembly assembly = Assembly.Load("netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51");
-        CSharpCompilationOptions options = new(OutputKind.DynamicallyLinkedLibrary);
-        Compilation compilation = CSharpCompilation.Create(
-            "ConstantsGeneratorTests",
-            [
-                CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(LanguageVersion.Latest))
-            ],
-            [
-               MetadataReference.CreateFromFile(typeof(object).Assembly.Location, MetadataReferenceProperties.Assembly),
-                MetadataReference.CreateFromFile(typeof(ConstantsAttribute).Assembly.Location, MetadataReferenceProperties.Assembly),
-                .. o!.ToString()!.Split(";").Select(x => MetadataReference.CreateFromFile(x))
-                //MetadataReference.CreateFromFile(assembly.Location),
-            ],
-            options);
-
-        return compilation;
-    }
-    public class StringAdditionalText : AdditionalText
-    {
-        private readonly string path;
-        private readonly string inline;
-
         public override string Path => path;
-
-        public StringAdditionalText(string path, string inline)
-        {
-            this.path = path;
-            this.inline = inline;
-        }
 
         public override SourceText GetText(CancellationToken cancellationToken = default)
         {
