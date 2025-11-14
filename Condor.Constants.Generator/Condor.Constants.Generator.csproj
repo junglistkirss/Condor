@@ -16,11 +16,11 @@
     <PackageDescription>Constants based generator</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
-    <PackageLicenseFile>../LICENSE</PackageLicenseFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
   
   <ItemGroup>
-    <None Include="../LICENSE" Pack="true" PackagePath="\" />
+    <None Include="../LICENSE" Pack="true" PackagePath="\" Link="LICENSE" />
     <None Include="readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 

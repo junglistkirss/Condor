@@ -12,13 +12,12 @@
     <Authors>Christian Bourbier</Authors>
     <PackageDescription>Attributes to instruct code generation for Contracts pattern</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <None Include="readme.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="../LICENSE" Pack="true" PackagePath="\" Link="LICENSE" />
+    <None Include="readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
