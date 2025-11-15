@@ -8,7 +8,7 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageId>Condor.Contracts.Generator.Abstractions</PackageId>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>Christian Bourbier</Authors>
     <PackageDescription>Attributes to instruct code generation for Contracts pattern</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>

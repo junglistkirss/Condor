@@ -8,7 +8,7 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageId>Condor.Generator.Utils</PackageId>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>Christian Bourbier</Authors>
     <PackageDescription>Utilities for code generation (Templating and Code Info)</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
