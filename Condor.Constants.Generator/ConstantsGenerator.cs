@@ -59,8 +59,7 @@ public class ConstantsGenerator : IIncrementalGenerator
                    {
                        ConstInfo[] members = [..
                            sc.TargetSymbol
-                            .Accept(MembersVisitor<IFieldSymbol>.Instance)
-                            .Where(x => x.IsConstant)
+                            .RequireFieldsMemberInfo(x => x.IsConst)
                             .Select(x =>
                             {
                                 string[] partials = [.. x.Attributes.Where(a => a.AttributeType.TypeFullName == typeof(ConstantAttribute).FullName).Select(x => x.ConstructorArguments[0].ArgumentValue?.ToString() ?? throw new Exception("Template key is required"))];
@@ -69,8 +68,8 @@ public class ConstantsGenerator : IIncrementalGenerator
                        ];
 
                        consts.Add(new ConstsOwnerInfo(
-                           sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
-                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"),
+                           sc.TargetSymbol.RequireStrongName(),
+                           sc.TargetSymbol is ITypeSymbol typeSymbol? typeSymbol.RequireTargetTypeInfo() : throw new Exception($"Symbol is not a type symbol [ISymbol]=\"{sc.TargetSymbol}\""),
                            attr.ConstructorArguments[0].Value?.ToString() ?? throw new Exception("Template key is required"),
                            members
                         ));
