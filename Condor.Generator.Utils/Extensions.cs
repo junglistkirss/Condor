@@ -41,7 +41,7 @@ public static class Extensions
                      .Where(assemblyPredicate) // CRACRA ça, trouver un autre moyen pour filrer les assemblys
                      .SelectMany(s =>
                      {
-                         return s.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"));
+                         return s.GlobalNamespace.GetSubTypes().Where(symbolPredicate).Select(x => x.RequireTargetTypeInfo());
                      });
                  };
              })
@@ -51,7 +51,7 @@ public static class Extensions
                  cancellationToken.ThrowIfCancellationRequested();
                  return (symbolPredicate) =>
                  {
-                     return cp.SourceModule.GlobalNamespace.Accept(SubTypesVisitor.Instance).Where(symbolPredicate).Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"));
+                     return cp.SourceModule.GlobalNamespace.GetSubTypes().Where(symbolPredicate).Select(x => x.RequireTargetTypeInfo());
                  };
              }))
              .Select((x, cancellationToken) =>
@@ -61,7 +61,7 @@ public static class Extensions
              });
     }
     public static IEnumerable<TargetTypeInfo> GetTypedArguments(this INamedTypeSymbol data)
-        => data.TypeArguments.Select(x => x.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve argument type info"));
+        => data.TypeArguments.Select(x => x.RequireTargetTypeInfo());
     public static bool TryGetNamedArgument<T>(this AttributeData data, string name, out T? value)
     {
         value = default;

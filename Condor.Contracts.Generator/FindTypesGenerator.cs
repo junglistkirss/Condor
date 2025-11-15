@@ -25,7 +25,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                 {
                     return new TypeFinderInfo
                     {
-                        TypeContraint = (x.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single().Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute constraint type info"),
+                        TypeContraint = x.RequireAttributeClass().TypeArguments.Single().RequireTargetTypeInfo(),
                         AssemblyContraint = x.TryGetNamedArgument(nameof(FindTypesAttribute<object>.AssemblyContraint), out string? s) ? s : null,
                         AssemblyName = sc.TargetSymbol.Name,
                         TemplateKey = x.ConstructorArguments.Single().Value?.ToString() ?? throw new Exception("Template key is required"),
@@ -67,7 +67,7 @@ public class FindTypesGenerator : IIncrementalGenerator
                     && (!Info.IsAbstract.HasValue || (x.IsAbstract == Info.IsAbstract.Value))
                     && (!Info.IsGeneric.HasValue || (x.IsGenericType == Info.IsGeneric.Value))
                     && (
-                        x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName) || x.Accept(BaseTypesVisitor.Instance).Any(i => i.Accept(StrongNameVisitor.Instance) == Info.TypeContraint.TypeFullName))
+                        x.AllInterfaces.Any(i => i.GetStrongName() == Info.TypeContraint.TypeFullName) || x.GetBaseTypes().Any(i => i.GetStrongName() == Info.TypeContraint.TypeFullName))
                         )];
 
         if (Info.GroupByHostAssembly)

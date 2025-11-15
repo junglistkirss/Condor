@@ -13,6 +13,7 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+
         IncrementalValuesProvider<KeyedTemplate> additionalFiles = context.GetTemplates();
 
         IncrementalValuesProvider<IntermediateInfo> visitors = GetFilesInfo(context);
@@ -72,7 +73,7 @@ public class TemplatedFilesGenerator : IIncrementalGenerator
                    foreach (AttributeData attr in sc.Attributes)
                    {
                        files.Add(new IntermediateInfo(
-                           sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"),
+                           sc.TargetSymbol.RequireTargetTypeInfo(),
                            attr.ConstructorArguments[0].Value?.ToString() ?? throw new Exception("Template is required"),
                            attr.ConstructorArguments[1].Value?.ToString() ?? throw new Exception("File pattern is required")
                         ));

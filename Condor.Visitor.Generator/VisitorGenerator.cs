@@ -67,8 +67,8 @@ public class VisitorGenerator : IIncrementalGenerator
                {
                    cancellationToken.ThrowIfCancellationRequested();
                    return sc.Attributes.Select(attr => (
-                        Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
-                        AcceptParamType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
+                        Correlation: sc.TargetSymbol.RequireStrongName(),
+                        AcceptParamType: (attr.RequireAttributeClass().TypeArguments.Single()).RequireTargetTypeInfo(),
                         AcceptParamName: attr.TryGetNamedArgument(nameof(AcceptParamAttribute<object>.ParamName), out string? n) ? n : null
                    ));
                }).SelectMany((x, cancellationToken) =>
@@ -90,7 +90,7 @@ public class VisitorGenerator : IIncrementalGenerator
                {
                    cancellationToken.ThrowIfCancellationRequested();
                    AttributeData attr = sc.Attributes.Single();
-                   return new VisitableInfo(sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"), attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string? name) ? name ?? throw new Exception("Accept method name cannot be null") : DefaultAcceptMethodName);
+                   return new VisitableInfo(sc.TargetSymbol.RequireStrongName(), attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string? name) ? name ?? throw new Exception("Accept method name cannot be null") : DefaultAcceptMethodName);
                });
     }
 
@@ -106,7 +106,7 @@ public class VisitorGenerator : IIncrementalGenerator
                    VisitOptions vo = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.VisitOptions), out VisitOptions f) ? f : VisitOptions.AbstractVisit;
                    OptionsDefault o = attr.TryGetNamedArgument(nameof(GenerateDefaultAttribute.Options), out OptionsDefault od) ? od : OptionsDefault.None;
                    return new GenerateDefaultInfo(
-                        sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
+                        sc.TargetSymbol.RequireStrongName(),
                         GenerateDefault: true,
                         vo == VisitOptions.UseVisitFallBack,
                         o.HasFlag(OptionsDefault.ForcePublic),
@@ -124,19 +124,19 @@ public class VisitorGenerator : IIncrementalGenerator
                (node, _) => node is TypeDeclarationSyntax,
                (sc, cancellationToken) =>
                {
-                   cancellationToken.ThrowIfCancellationRequested();
-                   return sc.Attributes.Select(attr => (
-                        Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
-                        VisitParamType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
-                        VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string? n) ? n : null
-                   ));
-               }).SelectMany((x, _) =>
+               cancellationToken.ThrowIfCancellationRequested();
+               return sc.Attributes.Select(attr => (
+                    Correlation: sc.TargetSymbol.RequireStrongName(),
+                    VisitParamType: attr.RequireAttributeClass().TypeArguments.Single().RequireTargetTypeInfo(),
+                    VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string? n) ? n : null
+               ));
+    }).SelectMany((x, _) =>
                {
-                   return x.GroupBy(e => e.Correlation).Select(e =>
-                   {
-                       return new VisitParamInfo(e.Key, e.Select(i => (i.VisitParamType, i.VisitParamName)));
-                   });
-               });
+        return x.GroupBy(e => e.Correlation).Select(e =>
+        {
+            return new VisitParamInfo(e.Key, e.Select(i => (i.VisitParamType, i.VisitParamName)));
+        });
+    });
     }
 
     private static IncrementalValuesProvider<VisitorInfo> GetVisitorsInfo(IncrementalGeneratorInitializationContext context)
@@ -150,8 +150,8 @@ public class VisitorGenerator : IIncrementalGenerator
                    cancellationToken.ThrowIfCancellationRequested();
                    AttributeData attr = sc.Attributes.Single();
                    return new VisitorInfo(
-                       sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
-                       sc.TargetSymbol.Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info"),
+                       sc.TargetSymbol.RequireStrongName(),
+                       sc.TargetSymbol.RequireTargetTypeInfo(),
                        ((TypeDeclarationSyntax)sc.TargetNode).Keyword.Text,
                        sc.TargetSymbol.DeclaredAccessibility.GetAccessibilityKeyWord(),
                        attr.TryGetNamedArgument(nameof(VisitorAttribute.IsAsync), out bool w) && w,
@@ -169,8 +169,8 @@ public class VisitorGenerator : IIncrementalGenerator
                {
                    cancellationToken.ThrowIfCancellationRequested();
                    return sc.Attributes.Select(attr => (
-                        Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
-                        ImplementationType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve target type info")
+                        Correlation: sc.TargetSymbol.RequireStrongName(),
+                        ImplementationType: attr.RequireAttributeClass().TypeArguments.Single().RequireTargetTypeInfo()
                    ));
                }).SelectMany((x, cancellationToken) =>
                {
@@ -193,8 +193,8 @@ public class VisitorGenerator : IIncrementalGenerator
                    cancellationToken.ThrowIfCancellationRequested();
                    AttributeData attr = sc.Attributes.Single();
                    return new OutputInfo(
-                       sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
-                       ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve argument type info")
+                       sc.TargetSymbol.RequireStrongName(),
+                       attr.RequireAttributeClass().TypeArguments.Single().RequireTargetTypeInfo()
                     );
                });
     }
@@ -233,8 +233,8 @@ public class VisitorGenerator : IIncrementalGenerator
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         return sc.Attributes.Select(attr => (
-                             Correlation: sc.TargetSymbol.Accept(StrongNameVisitor.Instance) ?? throw new Exception("Unable to resolve strong name"),
-                             VisitedType: ((INamedTypeSymbol)(attr.AttributeClass ?? throw new Exception("Attribute class is required")).TypeArguments.Single()).Accept(TargetTypeVisitor.Instance) ?? throw new Exception("Unable to resolve attribute type info"),
+                             Correlation: sc.TargetSymbol.RequireStrongName(),
+                             VisitedType: attr.RequireAttributeClass().TypeArguments.Single().RequireTargetTypeInfo(),
                              AssemblyPattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.AssemblyPattern), out string? ap) ? ap : sc.TargetSymbol.ContainingAssembly.Name,
                              TypePattern: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.TypePattern), out string? tp) ? tp : null,
                              Accept: attr.TryGetNamedArgument(nameof(AutoAcceptorAttribute<object>.Accept), out AcceptedKind abs) ? abs : AcceptedKind.Class,
@@ -256,13 +256,13 @@ public class VisitorGenerator : IIncrementalGenerator
                                          x => string.IsNullOrWhiteSpace(e.AssemblyPattern) || Regex.IsMatch(x.Name, e.AssemblyPattern),
                                          x =>
                                          {
-                                             string? strongName = x.Accept(StrongNameVisitor.Instance);
+                                             string? strongName = x.RequireStrongName();
                                              bool typePatternMatch = string.IsNullOrWhiteSpace(e.TypePattern)
                                                 || Regex.IsMatch(strongName, e.TypePattern);
                                              bool subTypeMatch =
                                                 e.VisitedType.TypeFullName != strongName
-                                                && x.AllInterfaces.Any(i => i.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName)
-                                                    || x.Accept(BaseTypesVisitor.Instance).Any(b => b.Accept(StrongNameVisitor.Instance) == e.VisitedType.TypeFullName);
+                                                && x.AllInterfaces.Any(i => i.GetStrongName() == e.VisitedType.TypeFullName)
+                                                    || x.GetBaseTypes().Any(b => b.GetStrongName() == e.VisitedType.TypeFullName);
                                              if (typePatternMatch && subTypeMatch)
                                              {
                                                  if (e.Accept != AcceptedKind.None)
@@ -404,12 +404,12 @@ public class VisitorGenerator : IIncrementalGenerator
     }
 
     private record struct VisitorInfo(string Correlation, TargetTypeInfo Owner, string Keyword, string AccessibilityModifier, bool IsAsync, string VisitMethodName) { }
-    private record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
-        , bool AddVisitFallback, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
-    { }
-    private record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
-    private record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string? VisitParamName)> VisitParamTypes) { }
-    private record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }
-    private record struct VisitableInfo(string Correlation, string AcceptMethodName) { }
-    private record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string? AcceptParamName)> AcceptParamTypes) { }
+private record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
+    , bool AddVisitFallback, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
+{ }
+private record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
+private record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string? VisitParamName)> VisitParamTypes) { }
+private record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }
+private record struct VisitableInfo(string Correlation, string AcceptMethodName) { }
+private record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string? AcceptParamName)> AcceptParamTypes) { }
 }
