@@ -11,7 +11,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <PackageId>Condor.Constants.Generator</PackageId>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <Authors>Christian Bourbier</Authors>
     <PackageDescription>Constants based generator</PackageDescription>
     <RepositoryUrl>https://github.com/junglistkirss/Condor</RepositoryUrl>
