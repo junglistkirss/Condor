@@ -90,7 +90,7 @@ public class VisitorGenerator : IIncrementalGenerator
                {
                    cancellationToken.ThrowIfCancellationRequested();
                    AttributeData attr = sc.Attributes.Single();
-                   return new VisitableInfo(sc.TargetSymbol.RequireStrongName(), attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string? name) ? name ?? throw new Exception("Accept method name cannot be null") : DefaultAcceptMethodName);
+                   return new VisitableInfo(sc.TargetSymbol.RequireStrongName(), true, attr.TryGetNamedArgument(nameof(GenerateVisitableAttribute.AcceptMethodName), out string? name) ? name ?? throw new Exception("Accept method name cannot be null") : DefaultAcceptMethodName);
                });
     }
 
@@ -124,19 +124,19 @@ public class VisitorGenerator : IIncrementalGenerator
                (node, _) => node is TypeDeclarationSyntax,
                (sc, cancellationToken) =>
                {
-               cancellationToken.ThrowIfCancellationRequested();
-               return sc.Attributes.Select(attr => (
-                    Correlation: sc.TargetSymbol.RequireStrongName(),
-                    VisitParamType: attr.RequireAttributeClass().TypeArguments.Single().RequireTargetTypeInfo(),
-                    VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string? n) ? n : null
-               ));
-    }).SelectMany((x, _) =>
-               {
-        return x.GroupBy(e => e.Correlation).Select(e =>
-        {
-            return new VisitParamInfo(e.Key, e.Select(i => (i.VisitParamType, i.VisitParamName)));
-        });
-    });
+                   cancellationToken.ThrowIfCancellationRequested();
+                   return sc.Attributes.Select(attr => (
+                        Correlation: sc.TargetSymbol.RequireStrongName(),
+                        VisitParamType: attr.RequireAttributeClass().TypeArguments.Single().RequireTargetTypeInfo(),
+                        VisitParamName: attr.TryGetNamedArgument(nameof(VisitParamAttribute<object>.ParamName), out string? n) ? n : null
+                   ));
+               }).SelectMany((x, _) =>
+                          {
+                              return x.GroupBy(e => e.Correlation).Select(e =>
+                   {
+                       return new VisitParamInfo(e.Key, e.Select(i => (i.VisitParamType, i.VisitParamName)));
+                   });
+                          });
     }
 
     private static IncrementalValuesProvider<VisitorInfo> GetVisitorsInfo(IncrementalGeneratorInitializationContext context)
@@ -383,33 +383,32 @@ public class VisitorGenerator : IIncrementalGenerator
                         AddVisitRedirect = x.AddVisitRedirect,
                         ImplementationTypes = [.. x.ImplementationTypes],
                     })],
-                    Default = new OutputVisitorDefaultInfo
+                    Default = GenerateDefault.GenerateDefault ? new OutputVisitorDefaultInfo
                     {
                         DefaultTypeName = (Visitor.Owner.IsGeneric ? Visitor.Owner.TypeName.Substring(0, Visitor.Owner.TypeName.IndexOf("<")) : Visitor.Owner.TypeName).SanitizeBaseOrInterfaceName(),
-                        GenerateDefault = GenerateDefault.GenerateDefault,
+                        // GenerateDefault = GenerateDefault.GenerateDefault,
                         ForcePublic = GenerateDefault.ForcePublic,
                         IsAbstract = GenerateDefault.IsAbstract,
                         IsPartial = GenerateDefault.IsPartial,
                         IsVisitAbstract = GenerateDefault.IsVisitAbstract && GenerateDefault.IsAbstract,
-                    },
-                    Visitable = new OutputVisitableInfo
+                    } : default!,
+                    Visitable = Visitable.GenerateVisitable ? new OutputVisitableInfo
                     {
                         VisitableTypeName = Visitor.Owner.GenericBaseTypeName.Replace("Visitor", "") + "Visitable",
                         VisitableParameters = [.. accept],
-                        GenerateVisitable = Visitable != default,
                         AcceptMethodName = string.IsNullOrWhiteSpace(Visitable.AcceptMethodName) ? DefaultAcceptMethodName : Visitable.AcceptMethodName.Trim(),
-                    }
+                    } : default!
                 };
             });
     }
 
     private record struct VisitorInfo(string Correlation, TargetTypeInfo Owner, string Keyword, string AccessibilityModifier, bool IsAsync, string VisitMethodName) { }
-private record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
-    , bool AddVisitFallback, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
-{ }
-private record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
-private record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string? VisitParamName)> VisitParamTypes) { }
-private record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }
-private record struct VisitableInfo(string Correlation, string AcceptMethodName) { }
-private record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string? AcceptParamName)> AcceptParamTypes) { }
+    private record struct AcceptorInfo(string Correlation, TargetTypeInfo VisitedType
+        , bool AddVisitFallback, bool AddVisitRedirect, IEnumerable<TargetTypeInfo> ImplementationTypes)
+    { }
+    private record struct OutputInfo(string Correlation, TargetTypeInfo Output) { }
+    private record struct VisitParamInfo(string Correlation, IEnumerable<(TargetTypeInfo VisitParamType, string? VisitParamName)> VisitParamTypes) { }
+    private record struct GenerateDefaultInfo(string Correlation, bool GenerateDefault, bool UseVisitFallBack, bool ForcePublic, bool IsPartial, bool IsAbstract, bool IsVisitAbstract) { }
+    private record struct VisitableInfo(string Correlation, bool GenerateVisitable, string AcceptMethodName) { }
+    private record struct AcceptParamInfo(string Correlation, IEnumerable<(TargetTypeInfo AcceptParamType, string? AcceptParamName)> AcceptParamTypes) { }
 }

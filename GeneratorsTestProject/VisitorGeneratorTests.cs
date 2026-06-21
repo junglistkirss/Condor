@@ -43,7 +43,42 @@ namespace TestNamespace
         Assert.DoesNotContain("void Visit(TestNamespace.ISubType element);", code);
         Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", code);
     }
+    [Fact]
+    public void Visitor_auto_interface_filter_generated_default()
+    {
+        // Arrange
+        string source = @"
+using Condor.Visitor.Generator.Abstractions;
 
+namespace TestNamespace
+{
+    public interface IBaseType {}
+    public interface ISubType : IBaseType {}
+    public class MyType1 : IBaseType{}
+    public class MyType2 : IBaseType{}
+    public class ExtraType {}
+
+    [Visitor]
+    [AutoAcceptor<IBaseType>(), GenerateDefault]
+    public partial interface ITestVisitor {}
+}";
+        string code = GenerateCode(source, out Diagnostic[] diagnostics);
+        Assert.Empty(diagnostics);
+
+        Assert.Contains("public partial interface ITestVisitor", code);
+        Assert.Contains("void Visit(TestNamespace.MyType1 element);", code);
+        Assert.Contains("void Visit(TestNamespace.MyType2 element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.IBaseType element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.ISubType element);", code);
+        Assert.DoesNotContain("void Visit(TestNamespace.ExtraType element);", code);
+
+        Assert.Contains("public class DefaultTestVisitor", code);
+        Assert.Contains("public virtual void Visit(TestNamespace.MyType1 element)", code);
+        Assert.Contains("public virtual void Visit(TestNamespace.MyType2 element)", code);
+        Assert.DoesNotContain("virtual void Visit(TestNamespace.IBaseType element)", code);
+        Assert.DoesNotContain("virtual void Visit(TestNamespace.ISubType element)", code);
+        Assert.DoesNotContain("virtual void Visit(TestNamespace.ExtraType element)", code);
+    }
     [Fact]
     public void Visitor_auto_interface_filterClass()
     {
